@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('dashboard') }}{% endblock %}
+{% block content %}
+<div class="container mt-4" dir="{{ 'rtl' if get_locale() == 'ar' else 'ltr' }}" style="text-align: {{ 'right' if get_locale() == 'ar' else 'left' }};">
+    <!-- قائمة اختيار الشهر -->
+    <form method="get" id="monthForm" class="mb-3">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label for="monthSelect" class="form-label fw-bold">{{ _('month') }}:</label>
+            </div>
+            <div class="col-auto">
+                <select id="monthSelect" name="month_year" class="form-select" onchange="document.getElementById('monthForm').submit()">
+                    {% for m in months %}
+                        <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m if get_locale() == 'en' else m.split('-')[1]|int|string + ' ' + m.split('-')[0] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+    <h2>{{ _('dashboard') }}</h2>
+    {% set net_profit = (ticket_profits + hotel_profits - total_expenses - total_salaries) %}
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div style="background-color: {% if net_profit >= 0 %}#198754{% else %}#dc3545{% endif %}; color: #fff; border-radius: 8px; padding: 18px; font-size: 1.2rem; box-shadow: 0 2px 6px #0001;">
+                <strong>{{ _('net_profit') }}:</strong>
+                {{ format_currency(net_profit, base_currency.id) }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-center" style="background-color: #dc3545; color: #fff;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('total_expenses') }}</h5>
+                    <p class="card-text">
+                        -{{ format_currency(total_expenses, base_currency.id) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center" style="background-color: #dc3545; color: #fff;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('total_salaries') }}</h5>
+                    <p class="card-text">
+                        -{{ format_currency(total_salaries, base_currency.id) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center" style="background-color: #198754; color: #fff;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('ticket_profits') }}</h5>
+                    <p class="card-text">
+                        {{ format_currency(ticket_profits, base_currency.id) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center" style="background-color: #198754; color: #fff;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('hotel_profits') }}</h5>
+                    <p class="card-text">
+                        {{ format_currency(hotel_profits, base_currency.id) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- رسم بياني لصافي الربح حسب الفترة -->
+    <div class="row mt-4">
+        <div class="col-md-12 mb-2">
+            <label for="profitPeriod" class="form-label">{{ _('net_profit') }} {{ _('month') }}:</label>
+            <select id="profitPeriod" class="form-select w-auto d-inline-block">
+                <option value="month">{{ _('month') }}</option>
+                <option value="year">{{ _('year') if get_locale() == 'en' else 'السنة' }}</option>
+            </select>
+        </div>
+        <div class="col-md-12">
+            <canvas id="profitChart"></canvas>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // ترجمة أسماء الشهور إذا كانت اللغة عربية
+    var months = {{ months|tojson }};
+    {% if get_locale() == 'ar' %}
+    months = months.map(function(m) {
+        var arMonths = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+        var parts = m.split('-');
+        var monthIdx = parseInt(parts[1], 10) - 1;
+        return arMonths[monthIdx] + ' ' + parts[0];
+    });
+    {% endif %}
+    var profitDataMonthly = [];
+    for (let i = 0; i < months.length; i++) {
+        profitDataMonthly.push(({{ ticket_profits_data|tojson }}[i] + {{ hotel_profits_data|tojson }}[i]) - {{ expenses_data|tojson }}[i] - {{ salaries_data|tojson }}[i]);
+    }
+    var profitDataYearly = [profitDataMonthly.reduce((a, b) => a + b, 0)];
+    var years = [new Date().getFullYear().toString()];
+    var days = {{ days|default([])|tojson }};
+    var profitDataDaily = [];
+    {% if daily_ticket_profits_data and daily_hotel_profits_data and daily_expenses_data and daily_salaries_data %}
+    for (let i = 0; i < days.length; i++) {
+        profitDataDaily.push(({{ daily_ticket_profits_data|tojson }}[i] + {{ daily_hotel_profits_data|tojson }}[i]) - {{ daily_expenses_data|tojson }}[i] - {{ daily_salaries_data|tojson }}[i]);
+    }
+    {% endif %}
+    var profitChartCtx = document.getElementById('profitChart').getContext('2d');
+    var profitChart = new Chart(profitChartCtx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: '{{ _('net_profit') }}',
+                data: profitDataMonthly,
+                borderColor: function(context) {
+                    const value = context.chart.data.datasets[0].data[context.dataIndex];
+                    return value >= 0 ? '#198754' : '#dc3545';
+                },
+                backgroundColor: 'rgba(25,135,84,0.1)',
+                fill: true,
+                tension: 0.3,
+                segment: {
+                    borderColor: ctx => ctx.p0.parsed.y >= 0 ? '#198754' : '#dc3545',
+                    backgroundColor: ctx => ctx.p0.parsed.y >= 0 ? 'rgba(25,135,84,0.1)' : 'rgba(220,53,69,0.1)'
+                },
+                pointBackgroundColor: function(context) {
+                    const value = context.chart.data.datasets[0].data[context.dataIndex];
+                    return value >= 0 ? '#198754' : '#dc3545';
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: '{{ _('net_profit') }}' }
+            }
+        }
+    });
+    document.getElementById('profitPeriod').addEventListener('change', function() {
+        if (this.value === 'month') {
+            profitChart.data.labels = months;
+            profitChart.data.datasets[0].label = '{{ _('net_profit') }}';
+            profitChart.data.datasets[0].data = profitDataMonthly;
+        } else if (this.value === 'year') {
+            profitChart.data.labels = years;
+            profitChart.data.datasets[0].label = '{{ _('net_profit') }}';
+            profitChart.data.datasets[0].data = profitDataYearly;
+        } else if (this.value === 'day' && days.length > 0) {
+            profitChart.data.labels = days;
+            profitChart.data.datasets[0].label = '{{ _('net_profit') }}';
+            profitChart.data.datasets[0].data = profitDataDaily;
+        }
+        profitChart.update();
+    });
+    if (days.length > 0) {
+        var select = document.getElementById('profitPeriod');
+        var option = document.createElement('option');
+        option.value = 'day';
+        option.text = '{{ _('day') if get_locale() == 'en' else 'اليوم' }}';
+        select.appendChild(option);
+    }
+    var ctx = document.getElementById('monthlyChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: '{{ _('total_expenses') }}',
+                    data: {{ expenses_data|tojson }},
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                },
+                {
+                    label: '{{ _('total_salaries') }}',
+                    data: {{ salaries_data|tojson }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                },
+                {
+                    label: '{{ _('ticket_profits') }}',
+                    data: {{ ticket_profits_data|tojson }},
+                    backgroundColor: 'rgba(255, 206, 86, 0.5)'
+                },
+                {
+                    label: '{{ _('hotel_profits') }}',
+                    data: {{ hotel_profits_data|tojson }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: '{{ _('dashboard') }}' }
+            }
+        }
+    });
+</script>
+{% endblock %}

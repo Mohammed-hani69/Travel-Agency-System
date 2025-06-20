@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('expenses') }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ _('expenses') }}</h2>
+    <form method="POST" action="/expenses" class="p-3 bg-light rounded shadow-sm mb-4">
+        <div class="row mb-3">
+            <div class="col-md-6 mb-2">
+                <label for="expenseName" class="form-label">{{ _('name') }}</label>
+                <input type="text" id="expenseName" name="name" class="form-control" placeholder="{{ _('name') }}" required>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label for="expenseAmount" class="form-label">{{ _('amount') }}</label>
+                <input type="number" step="0.01" id="expenseAmount" name="amount" class="form-control" placeholder="{{ _('amount') }}" required>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label for="expenseCurrency" class="form-label">{{ _('currency') }}</label>
+                <select id="expenseCurrency" name="currency_id" class="form-select" required>
+                    {% for currency in currencies %}
+                        <option value="{{ currency.id }}">{{ currency.code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4 mb-2">
+                <label for="expenseDate" class="form-label">{{ _('date') }}</label>
+                <input type="date" id="expenseDate" name="date" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-2">
+                <label for="expenseMonthYear" class="form-label">{{ _('month') }}</label>
+                <input type="text" id="expenseMonthYear" name="month_year" class="form-control" placeholder="YYYY-MM" required>
+            </div>
+            <div class="col-md-4 mb-2">
+                <label for="expenseNotes" class="form-label">{{ _('notes') }}</label>
+                <input type="text" id="expenseNotes" name="notes" class="form-control" placeholder="{{ _('notes') }}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-end">
+                <button type="submit" class="btn btn-primary px-4">{{ _('add_new') }}</button>
+            </div>
+        </div>
+    </form>
+    <hr>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>{{ _('name') }}</th>
+                <th>{{ _('amount') }}</th>
+                <th>{{ _('currency') }}</th>
+                <th>{{ _('date') }}</th>
+                <th>{{ _('notes') }}</th>
+                <th>{{ _('actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set base_currency = currencies|selectattr('is_base')|first %}
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.id }}</td>
+                <td>{{ expense.name }}</td>
+                <td>
+                  {{ format_currency(expense.amount, expense.currency_id) }}<br>
+                  <span class="text-info small">
+                    ({{ format_currency(convert_currency(expense.amount, expense.currency_id, base_currency.id), base_currency.id) }})
+                  </span>
+                </td>
+                <td>{{ expense.currency.code }}</td>
+                <td>{{ expense.date }}</td>
+                <td>{{ expense.notes }}</td>
+                <td>
+                    <form method="POST" action="/expenses/delete" style="display:inline;">
+                        <input type="hidden" name="expense_id" value="{{ expense.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm">{{ _('delete') }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

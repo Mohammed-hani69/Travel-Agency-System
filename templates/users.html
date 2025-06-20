@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}إدارة المستخدمين{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>إدارة المستخدمين</h2>
+    <form method="POST" action="/users" class="p-3 bg-light rounded shadow-sm mb-4">
+        <div class="row mb-3">
+            <div class="col-md-4 mb-2">
+                <label for="userEmail" class="form-label">البريد الإلكتروني</label>
+                <input type="email" id="userEmail" name="email" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-2">
+                <label for="userPassword" class="form-label">كلمة المرور</label>
+                <input type="password" id="userPassword" name="password" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-2">
+                <label for="userRole" class="form-label">الصلاحية</label>
+                <select id="userRole" name="role" class="form-select" required>
+                    <option value="admin">مدير</option>
+                    <option value="accountant">محاسب</option>
+                    <option value="employee">موظف</option>
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-12 mb-2">
+                <label class="form-label">صلاحيات الوصول للصفحات</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="dashboard" id="permDashboard">
+                    <label class="form-check-label" for="permDashboard">لوحة التحكم</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="expenses" id="permExpenses">
+                    <label class="form-check-label" for="permExpenses">المصروفات</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="salaries" id="permSalaries">
+                    <label class="form-check-label" for="permSalaries">الرواتب</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="tickets" id="permTickets">
+                    <label class="form-check-label" for="permTickets">التذاكر</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="hotels" id="permHotels">
+                    <label class="form-check-label" for="permHotels">الفنادق</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="currencies" id="permCurrencies">
+                    <label class="form-check-label" for="permCurrencies">إعدادات العملة</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="export" id="permExport">
+                    <label class="form-check-label" for="permExport">تصدير البيانات</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-end">
+                <button type="submit" class="btn btn-primary px-4">إضافة مستخدم</button>
+            </div>
+        </div>
+    </form>
+    <hr>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>البريد الإلكتروني</th>
+                <th>الصلاحية</th>
+                <th>صلاحيات الوصول</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+                <td>{{ user.permissions|join(', ') }}</td>
+                <td>
+                    <!-- يمكن إضافة أزرار تعديل/حذف لاحقاً -->
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

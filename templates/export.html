@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('export') }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ _('export') }}</h2>
+    <form method="GET" action="/export/download">
+        <div class="row">
+            <div class="col-md-3">
+                <select name="section" class="form-select" required>
+                    <option value="expenses">{{ _('expenses') }}</option>
+                    <option value="salaries">{{ _('salaries') }}</option>
+                    <option value="tickets">{{ _('tickets') }}</option>
+                    <option value="hotels">{{ _('hotels') }}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="month_year" class="form-control" placeholder="YYYY-MM" required>
+            </div>
+            <div class="col-md-3">
+                <select name="format" class="form-select" required>
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">{{ _('export') }}</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

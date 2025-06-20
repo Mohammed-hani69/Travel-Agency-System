@@ -1,0 +1,28 @@
+# Ignore Python cache and environment files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+.env
+.venv/
+venv/
+
+# Ignore VSCode settings
+.vscode/
+
+# Ignore translation build files
+*.mo
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore Jupyter and notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore export files
+*.xlsx
+*.pdf
+*.csv

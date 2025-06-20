@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('hotels') }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ _('hotels') }}</h2>
+    <!-- منطقة ملخص الأرباح والخسائر -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div style="background-color: #198754; color: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 6px #0001;">
+                <strong>مجموع الأرباح:</strong>
+                {{ format_currency(hotels|map(attribute='profit')|select('gt', 0)|sum, base_currency.id) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div style="background-color: #dc3545; color: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 6px #0001;">
+                <strong>مجموع الخسائر:</strong>
+                {{ format_currency(hotels|map(attribute='profit')|select('lt', 0)|sum, base_currency.id) }}
+            </div>
+        </div>
+    </div>
+    <form method="POST" action="/hotels" class="p-3 bg-light rounded shadow-sm mb-4">
+        <div class="row mb-3">
+            <div class="col-md-2 mb-2">
+                <label for="bookingNumber" class="form-label">رقم الحجز</label>
+                <input type="text" id="bookingNumber" name="booking_number" class="form-control" placeholder="رقم الحجز" required>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label for="hotelName" class="form-label">اسم الفندق</label>
+                <input type="text" id="hotelName" name="hotel_name" class="form-control" placeholder="اسم الفندق" required>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label for="guestName" class="form-label">اسم النزيل</label>
+                <input type="text" id="guestName" name="guest_name" class="form-control" placeholder="اسم النزيل" required>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label for="checkInDate" class="form-label">تاريخ الدخول</label>
+                <input type="date" id="checkInDate" name="check_in_date" class="form-control" required>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label for="checkOutDate" class="form-label">تاريخ الخروج</label>
+                <input type="date" id="checkOutDate" name="check_out_date" class="form-control" required>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-2 mb-2">
+                <label for="purchasePrice" class="form-label">سعر الشراء</label>
+                <input type="number" step="0.01" id="purchasePrice" name="purchase_price" class="form-control" placeholder="سعر الشراء" required>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label for="sellingPrice" class="form-label">سعر البيع</label>
+                <input type="number" step="0.01" id="sellingPrice" name="selling_price" class="form-control" placeholder="سعر البيع" required>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label for="hotelCurrency" class="form-label">{{ _('currency') }}</label>
+                <select id="hotelCurrency" name="currency_id" class="form-select" required>
+                    {% for currency in currencies %}
+                        <option value="{{ currency.id }}">{{ currency.code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 mb-2">
+                <label for="paymentFees" class="form-label">رسوم الدفع</label>
+                <input type="number" step="0.01" id="paymentFees" name="payment_fees" class="form-control" placeholder="رسوم الدفع" value="0">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-end">
+                <button type="submit" class="btn btn-primary px-4">{{ _('add_new') }}</button>
+            </div>
+        </div>
+    </form>
+    <hr>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم الحجز</th>
+                <th>اسم الفندق</th>
+                <th>اسم النزيل</th>
+                <th>تاريخ الدخول</th>
+                <th>تاريخ الخروج</th>
+                <th>سعر الشراء</th>
+                <th>سعر البيع</th>
+                <th>رسوم الدفع</th>
+                <th>الربح</th>
+                <th>{{ _('currency') }}</th>
+                <th>{{ _('actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set base_currency = currencies|selectattr('is_base')|first %}
+            {% for hotel in hotels %}
+            <tr>
+                <td>{{ hotel.id }}</td>
+                <td>{{ hotel.booking_number }}</td>
+                <td>{{ hotel.hotel_name }}</td>
+                <td>{{ hotel.guest_name }}</td>
+                <td>{{ hotel.check_in_date }}</td>
+                <td>{{ hotel.check_out_date }}</td>
+                <td>
+                  {{ format_currency(hotel.purchase_price, hotel.currency_id) }}<br>
+                  <span class="text-info small">
+                    ({{ format_currency(convert_currency(hotel.purchase_price, hotel.currency_id, base_currency.id), base_currency.id) }})
+                  </span>
+                </td>
+                <td>
+                  {{ format_currency(hotel.selling_price, hotel.currency_id) }}<br>
+                  <span class="text-info small">
+                    ({{ format_currency(convert_currency(hotel.selling_price, hotel.currency_id, base_currency.id), base_currency.id) }})
+                  </span>
+                </td>
+                <td>
+                  {{ format_currency(hotel.payment_fees, hotel.currency_id) }}<br>
+                  <span class="text-info small">
+                    ({{ format_currency(convert_currency(hotel.payment_fees, hotel.currency_id, base_currency.id), base_currency.id) }})
+                  </span>
+                </td>
+                <td>
+                  {{ format_currency(hotel.profit, hotel.currency_id) }}<br>
+                  <span class="text-info small">
+                    ({{ format_currency(convert_currency(hotel.profit, hotel.currency_id, base_currency.id), base_currency.id) }})
+                  </span>
+                </td>
+                <td>{{ hotel.currency.code }}</td>
+                <td>
+                    <form method="POST" action="/hotels/delete" style="display:inline;">
+                        <input type="hidden" name="hotel_id" value="{{ hotel.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm">{{ _('delete') }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

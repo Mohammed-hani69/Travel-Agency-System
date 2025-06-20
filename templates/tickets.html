@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('tickets') }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ _('tickets') }}</h2>
+    <!-- منطقة ملخص الأرباح والخسائر -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div style="background-color: #198754; color: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 6px #0001;">
+                <strong>مجموع الأرباح:</strong>
+                {{ format_currency(tickets|map(attribute='profit')|select('gt', 0)|sum, base_currency.id) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div style="background-color: #dc3545; color: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 6px #0001;">
+                <strong>مجموع الخسائر:</strong>
+                {{ format_currency(tickets|map(attribute='profit')|select('lt', 0)|sum, base_currency.id) }}
+            </div>
+        </div>
+    </div>
+    <form method="POST" action="/tickets/add" class="p-4 bg-light rounded shadow-sm mb-4">
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label for="ticketNumber" class="form-label">رقم التذكرة</label>
+            <input type="text" id="ticketNumber" name="ticket_number" class="form-control" placeholder="رقم التذكرة" required>
+        </div>
+        <div class="col-md-2">
+            <label for="pnr" class="form-label">PNR</label>
+            <input type="text" id="pnr" name="pnr" class="form-control" placeholder="PNR" required>
+        </div>
+        <div class="col-md-3">
+            <label for="departureLocation" class="form-label">مكان المغادرة</label>
+            <input type="text" id="departureLocation" name="departure_location" class="form-control" placeholder="مكان المغادرة" required>
+        </div>
+        <div class="col-md-3">
+            <label for="arrivalLocation" class="form-label">مكان الوصول</label>
+            <input type="text" id="arrivalLocation" name="arrival_location" class="form-control" placeholder="مكان الوصول" required>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label for="customerName" class="form-label">اسم العميل</label>
+            <input type="text" id="customerName" name="customer_name" class="form-control" placeholder="اسم العميل">
+        </div>
+        <div class="col-md-4">
+            <label for="ticketSource" class="form-label">مصدر التذكرة</label>
+            <input type="text" id="ticketSource" name="ticket_source" class="form-control" placeholder="مصدر التذكرة">
+        </div>
+        <div class="col-md-2">
+            <label for="passengersCount" class="form-label">عدد الأفراد</label>
+            <input type="number" id="passengersCount" name="passengers_count" class="form-control" min="1" value="1">
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label for="purchasePrice" class="form-label">سعر الشراء</label>
+            <input type="number" step="0.01" id="purchasePrice" name="purchase_price" class="form-control" placeholder="سعر الشراء" required>
+        </div>
+        <div class="col-md-3">
+            <label for="sellingPrice" class="form-label">سعر البيع</label>
+            <input type="number" step="0.01" id="sellingPrice" name="selling_price" class="form-control" placeholder="سعر البيع" required>
+        </div>
+        <div class="col-md-3">
+            <label for="ticketCurrency" class="form-label">{{ _('currency') }}</label>
+            <select id="ticketCurrency" name="currency_id" class="form-select" required>
+                {% for currency in currencies %}
+                    <option value="{{ currency.id }}">{{ currency.code }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="paymentFees" class="form-label">رسوم الدفع</label>
+            <input type="number" step="0.01" id="paymentFees" name="payment_fees" class="form-control" placeholder="رسوم الدفع" value="0">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 text-end">
+            <button type="submit" class="btn btn-primary px-5">{{ _('add_new') }}</button>
+        </div>
+    </div>
+</form>
+
+    <hr>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم التذكرة</th>
+                <th>PNR</th>
+                <th>مكان المغادرة</th>
+                <th>مكان الوصول</th>
+                <th>اسم العميل</th>
+                <th>مصدر التذكرة</th>
+                <th>عدد الأفراد</th>
+                <th>سعر الشراء</th>
+                <th>سعر البيع</th>
+                <th>رسوم الدفع</th>
+                <th>الربح</th>
+                <th>{{ _('currency') }}</th>
+                <th>{{ _('actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set base_currency = currencies|selectattr('is_base')|first %}
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.id }}</td>
+                <td>{{ ticket.ticket_number }}</td>
+                <td>{{ ticket.pnr }}</td>
+                <td>{{ ticket.departure_location }}</td>
+                <td>{{ ticket.arrival_location }}</td>
+                <td>{{ ticket.customer_name }}</td>
+                <td>{{ ticket.ticket_source }}</td>
+                <td>{{ ticket.passengers_count }}</td>
+                <td>
+                  {{ format_currency(ticket.purchase_price, ticket.currency_id) }}<br>
+                  <span class="text-info small">
+                    ({{ format_currency(convert_currency(ticket.purchase_price, ticket.currency_id, base_currency.id), base_currency.id) }})
+                  </span>
+                </td>
+                <td>
+                  {{ format_currency(ticket.selling_price, ticket.currency_id) }}<br>
+                  <span class="text-info small">
+                    ({{ format_currency(convert_currency(ticket.selling_price, ticket.currency_id, base_currency.id), base_currency.id) }})
+                  </span>
+                </td>
+                <td>
+                  {{ format_currency(ticket.payment_fees, ticket.currency_id) }}<br>
+                  <span class="text-info small">
+                    ({{ format_currency(convert_currency(ticket.payment_fees, ticket.currency_id, base_currency.id), base_currency.id) }})
+                  </span>
+                </td>
+                <td>
+                  {{ format_currency(ticket.profit, ticket.currency_id) }}<br>
+                  <span class="text-info small">
+                    ({{ format_currency(convert_currency(ticket.profit, ticket.currency_id, base_currency.id), base_currency.id) }})
+                  </span>
+                </td>
+                <td>{{ ticket.currency.code }}</td>
+                <td>
+                    <form method="POST" action="/tickets/delete" style="display:inline;">
+                        <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm">{{ _('delete') }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
