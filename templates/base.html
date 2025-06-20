@@ -12,13 +12,13 @@
             --primary-bg: #0a0e1a;
             --secondary-bg: #1a1f2e;
             --card-bg: #242938;
-            --accent-color: #00d4ff;
+            --accent-color: #8a3ee9;
             --text-primary: #ffffff;
             --text-secondary: #8892b0;
             --hover-bg: #2a3441;
             --border-color: rgba(255, 255, 255, 0.1);
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-accent: linear-gradient(135deg, #00d4ff 0%, #0097a7 100%);
+            --gradient-primary: linear-gradient(135deg,rgb(143, 60, 245) 0%, #764ba2 100%);
+            --gradient-accent: linear-gradient(135deg, #8a3ee9 0%,rgb(107, 43, 185) 100%);
         }
 
         body {
@@ -37,8 +37,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%);
+            background: radial-gradient(circle at 20% 80%, rgba(225, 0, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(234, 102, 234, 0.1) 0%, transparent 50%);
             z-index: -1;
             pointer-events: none;
         }
@@ -122,7 +122,7 @@
             background: var(--hover-bg);
             color: var(--accent-color);
             transform: translateX(8px);
-            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(204, 0, 255, 0.2);
         }
 
         .sidebar .nav-link i {
@@ -156,7 +156,7 @@
 
         .sidebar .lang-switch select:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
+            box-shadow: 0 0 0 0.2rem rgba(225, 0, 255, 0.25);
             background: var(--hover-bg);
         }
 
@@ -198,7 +198,7 @@
             background: var(--card-bg);
             color: #fff;
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
+            box-shadow: 0 0 0 0.2rem rgba(225, 0, 255, 0.25);
             transform: translateY(-1px);
         }
 
@@ -210,13 +210,13 @@
             border-radius: 8px;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(212, 0, 255, 0.3);
         }
 
         .btn-primary:hover, .btn-primary:focus {
-            background: linear-gradient(135deg, #0097a7 0%, #006064 100%);
+            background: linear-gradient(135deg,rgb(167, 0, 159) 0%,rgb(100, 0, 100) 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+            box-shadow: 0 6px 20px rgba(204, 0, 255, 0.4);
         }
 
         .btn-danger {
@@ -426,14 +426,15 @@
 
         a:not(.nav-link):not(.btn):hover {
             color: #ffffff;
-            text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+            text-shadow: 0 0 8px rgba(212, 0, 255, 0.5);
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <div class="sidebar-header">
-            <i class="fa-solid fa-plane-departure"></i> travel_agency
+        <div class="sidebar-header text-center d-flex align-items-center justify-content-center" style="gap:10px;">
+            <img src="/static/img/logo.png" alt="ES-Travel Logo" style="height:40px;vertical-align:middle;order:2;">
+            <span style="font-weight:bold;font-size:1.3rem;vertical-align:middle;letter-spacing:1px;order:1;">ES-Travel</span>
         </div>
         <nav class="nav flex-column">
             <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">

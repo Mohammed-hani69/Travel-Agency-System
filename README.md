@@ -55,7 +55,7 @@
    ```
    git init
    git add .
-   git commit -m "v 1.0.0"
+   git commit -m "v 1.1.0"
    git branch -M main
    git remote add origin https://github.com/Mohammed-hani69/travel-agency-elzoz.git
    git push -u origin main
