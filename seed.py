@@ -33,10 +33,10 @@ with app.app_context():
     db.session.commit()
 
     # 2. حساب الأدمن
-    if not Admin.query.filter_by(email='admin@admin.com').first():
+    if not Admin.query.filter_by(email='admin@gmail.com').first():
         admin = Admin(
             email='admin@admin.com',
-            password_hash=generate_password_hash('admin123'),
+            password_hash=generate_password_hash('12345678'),
             preferred_currency_id=egp.id,
             role='admin',
             permissions=json.dumps(['dashboard', 'currencies', 'expenses', 'salaries', 'tickets', 'hotels', 'export', 'users'], ensure_ascii=False)
