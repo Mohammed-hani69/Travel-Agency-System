@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Travel Agency{% endblock %}</title>
+    <title>{% block title %}{{ _('site_name') if _('site_name') != 'site_name' else 'ES-Travel' }}{% endblock %} | ES-Travel</title>
+    <link rel="icon" type="image/png" href="/static/img/logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -437,29 +438,54 @@
             <span style="font-weight:bold;font-size:1.3rem;vertical-align:middle;letter-spacing:1px;order:1;">ES-Travel</span>
         </div>
         <nav class="nav flex-column">
+            {% set perms = current_user.permissions if current_user.role != 'admin' else ['dashboard','expenses','salaries','tickets','hotels','currencies','export','users','visas'] %}
+            {% if 'dashboard' in perms %}
             <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
                 <i class="fa-solid fa-chart-line"></i> {{ _('dashboard') }}
             </a>
+            {% endif %}
+            {% if 'expenses' in perms %}
             <a class="nav-link {% if '/expenses' in request.path %}active{% endif %}" href="/expenses">
                 <i class="fa-solid fa-money-bill-wave"></i> {{ _('expenses') }}
             </a>
+            {% endif %}
+            {% if 'salaries' in perms %}
             <a class="nav-link {% if '/salaries' in request.path %}active{% endif %}" href="/salaries">
                 <i class="fa-solid fa-users"></i> {{ _('salaries') }}
             </a>
+            {% endif %}
+            {% if 'tickets' in perms %}
             <a class="nav-link {% if '/tickets' in request.path %}active{% endif %}" href="/tickets">
                 <i class="fa-solid fa-ticket"></i> {{ _('tickets') }}
             </a>
+            {% endif %}
+            {% if 'hotels' in perms %}
             <a class="nav-link {% if '/hotels' in request.path %}active{% endif %}" href="/hotels">
                 <i class="fa-solid fa-hotel"></i> {{ _('hotels') }}
             </a>
+            {% endif %}
+            {% if 'visas' in perms %}
+            <a class="nav-link {% if '/visas' in request.path %}active{% endif %}" href="/visas">
+                <i class="fa-solid fa-passport"></i> {{ _('visas') if _('visas') != 'visas' else 'التأشيرات' }}
+            </a>
+            {% endif %}
+            {% if 'currencies' in perms %}
             <a class="nav-link {% if '/currencies' in request.path %}active{% endif %}" href="/currencies">
                 <i class="fa-solid fa-coins"></i> {{ _('currency_settings') }}
             </a>
+            {% endif %}
+            {% if 'export' in perms %}
             <a class="nav-link {% if '/export' in request.path %}active{% endif %}" href="/export">
                 <i class="fa-solid fa-file-export"></i> {{ _('export') }}
             </a>
+            {% endif %}
+            {% if 'users' in perms %}
             <a class="nav-link {% if '/users' in request.path %}active{% endif %}" href="/users">
                 <i class="fa-solid fa-users-gear"></i> {{ _('users_management') }}
+            </a>
+            {% endif %}
+            <a class="nav-link" href="/logout" style="margin-top:40px;color:#e53935;">
+                <i class="fa-solid fa-right-from-bracket"></i> {{ _('logout') if _('logout') != 'logout' else 'تسجيل الخروج' }}
             </a>
         </nav>
         <div class="lang-switch">
@@ -471,6 +497,7 @@
             </form>
         </div>
     </div>
+    
     <div class="main-content">
         {% with messages = get_flashed_messages() %}
             {% if messages %}

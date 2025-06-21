@@ -55,9 +55,9 @@
    ```
    git init
    git add .
-   git commit -m "v 1.1.0"
+   git commit -m "v 1.1.1"
    git branch -M main
-   git remote add origin https://github.com/Mohammed-hani69/travel-agency-elzoz.git
+   git remote add origin https://github.com/Mohammed-hani69/Travel-Agency-System.git
    git push -u origin main
    ```
    استبدل `USERNAME` و`REPO_NAME` باسم المستخدم واسم المستودع الخاص بك.

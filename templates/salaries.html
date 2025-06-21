@@ -52,19 +52,18 @@
             </tr>
         </thead>
         <tbody>
-            {% set base_currency = currencies|selectattr('is_base')|first %}
+            {# تحديد العملة الرئيسية #}
+            {% set currency_code = base_currency.code.lower() %}
             {% for employee in employees %}
             <tr>
                 <td>{{ employee.id }}</td>
                 <td>{{ employee.name }}</td>
                 <td>{{ employee.job_title }}</td>
                 <td>
-                  {{ format_currency(employee.salary_amount, employee.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(employee.salary_amount, employee.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {# عرض الراتب من العمود المحفوظ حسب العملة الرئيسية #}
+                  {{ format_currency(attribute(employee, 'salary_amount_' ~ currency_code), base_currency.id) }}
                 </td>
-                <td>{{ employee.currency.code }}</td>
+                <td>{{ base_currency.code }}</td>
                 <td>{{ employee.payment_date }}</td>
                 <td>
                     <form method="POST" action="/salaries/delete" style="display:inline;">
@@ -73,7 +72,9 @@
                     </form>
                     <form method="POST" action="/salaries/pay-again" style="display:inline; margin-right: 5px;">
                         <input type="hidden" name="employee_id" value="{{ employee.id }}">
-                        <button type="submit" class="btn btn-success btn-sm">تقبيض جديد</button>
+                        <button type="submit" class="btn btn-success btn-sm">
+                            تقبـيض جديد
+                        </button>
                     </form>
                 </td>
             </tr>

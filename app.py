@@ -1,9 +1,9 @@
 from flask import Flask, request, session, render_template, redirect, url_for, flash, g
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, current_user
+from flask_login import LoginManager, current_user, login_required, logout_user
 from flask_babel import Babel
 from werkzeug.security import generate_password_hash
-from models import db, Admin, Currency, Employee, Expense, Hotel, Ticket
+from models import db, Admin, Currency, Employee, Expense, Hotel, Ticket, Visa
 from currency_utils import format_currency, convert_currency
 from sqlalchemy import func
 from datetime import datetime
@@ -52,16 +52,28 @@ def load_user(user_id):
 def create_tables():
     with app.app_context():
         db.create_all()
-        
-        # Add default currencies if they don't exist
-        if not Currency.query.first():
-            currencies = [
-                Currency(code='SAR', name='Saudi Riyal', symbol='﷼', exchange_rate=1.0, is_base=True),
-                Currency(code='USD', name='US Dollar', symbol='$', exchange_rate=3.75),
-                Currency(code='EUR', name='Euro', symbol='€', exchange_rate=4.10),
-            ]
-            for currency in currencies:
-                db.session.add(currency)
+        # إضافة العملات الرئيسية إذا لم تكن موجودة
+        main_currencies = [
+            {'code': 'EGP', 'name': 'Egyptian Pound', 'symbol': 'ج.م', 'exchange_rate': 1.0, 'is_base': True},
+            {'code': 'USD', 'name': 'US Dollar', 'symbol': '$', 'exchange_rate': 48.0, 'is_base': False},
+            {'code': 'EUR', 'name': 'Euro', 'symbol': '€', 'exchange_rate': 52.0, 'is_base': False},
+            {'code': 'SAR', 'name': 'Saudi Riyal', 'symbol': '﷼', 'exchange_rate': 12.8, 'is_base': False},
+        ]
+        for c in main_currencies:
+            if not Currency.query.filter_by(code=c['code']).first():
+                db.session.add(Currency(**c))
+        db.session.commit()
+        # إضافة حساب أدمن افتراضي إذا لم يكن موجوداً
+        if not Admin.query.filter_by(email='ezezo291@gmail.com').first():
+            default_currency = Currency.query.first()
+            admin = Admin(
+                email='ezezo291@gmail.com',
+                password_hash=generate_password_hash('zxc65432'),
+                preferred_currency_id=default_currency.id,
+                role='admin',
+                permissions=json.dumps(['dashboard', 'currencies', 'expenses', 'salaries', 'tickets', 'hotels', 'export', 'users'], ensure_ascii=False)
+            )
+            db.session.add(admin)
             db.session.commit()
 
 def get_base_currency():
@@ -90,16 +102,20 @@ def permission_required(page_key):
 @permission_required('dashboard')
 def dashboard():
     base_currency = get_base_currency()
-    # الحصول على الشهر المطلوب من الباراميتر أو الشهر الحالي
     month_year = request.args.get('month_year')
     if not month_year:
         month_year = datetime.now().strftime('%Y-%m')
-    # حساب الملخصات المالية مع التحويل الذكي
-    expenses = Expense.query.all()
-    employees = Employee.query.all()
-    tickets = Ticket.query.all()
-    hotels = Hotel.query.all()
-    # بيانات الرسم البياني الشهري
+    expenses = Expense.query.filter_by(created_by=current_user.id).all()
+    employees = Employee.query.filter_by(created_by=current_user.id).all()
+    tickets = Ticket.query.filter_by(created_by=current_user.id).all()
+    hotels = Hotel.query.filter_by(created_by=current_user.id).all()
+
+    # تحديد اسم العمود حسب العملة الرئيسية
+    currency_code = base_currency.code.lower()
+    expense_field = f'amount_{currency_code}'
+    salary_field = f'salary_amount_{currency_code}'
+    profit_field = f'profit_{currency_code}'
+
     months = []
     expenses_data = []
     salaries_data = []
@@ -108,15 +124,17 @@ def dashboard():
     for m in range(1, 13):
         month_str = f"2025-{m:02d}"
         months.append(month_str)
-        expenses_data.append(sum(convert_currency(e.amount, e.currency_id, base_currency.id) for e in expenses if e.month_year == month_str))
-        salaries_data.append(sum(convert_currency(emp.salary_amount, emp.currency_id, base_currency.id) for emp in employees if emp.payment_date.strftime('%Y-%m') == month_str))
-        ticket_profits_data.append(sum(convert_currency(t.profit, t.currency_id, base_currency.id) for t in tickets if t.month_year == month_str))
-        hotel_profits_data.append(sum(convert_currency(h.profit, h.currency_id, base_currency.id) for h in hotels if h.month_year == month_str))
-    # بيانات الشهر المختار
-    total_expenses = sum(convert_currency(e.amount, e.currency_id, base_currency.id) for e in expenses if e.month_year == month_year)
-    total_salaries = sum(convert_currency(emp.salary_amount, emp.currency_id, base_currency.id) for emp in employees if emp.payment_date.strftime('%Y-%m') == month_year)
-    ticket_profits = sum(convert_currency(t.profit, t.currency_id, base_currency.id) for t in tickets if t.month_year == month_year)
-    hotel_profits = sum(convert_currency(h.profit, h.currency_id, base_currency.id) for h in hotels if h.month_year == month_year)
+        expenses_data.append(sum(getattr(e, expense_field) for e in expenses if e.month_year == month_str))
+        salaries_data.append(sum(getattr(emp, salary_field) for emp in employees if emp.payment_date.strftime('%Y-%m') == month_str))
+        ticket_profits_data.append(sum(getattr(t, profit_field) for t in tickets if t.month_year == month_str))
+        hotel_profits_data.append(sum(getattr(h, profit_field) for h in hotels if h.month_year == month_str))
+    total_expenses = sum(getattr(e, expense_field) for e in expenses if e.month_year == month_year)
+    total_salaries = sum(getattr(emp, salary_field) for emp in employees if emp.payment_date.strftime('%Y-%m') == month_year)
+    ticket_profits = sum(getattr(t, profit_field) for t in tickets if t.month_year == month_year)
+    hotel_profits = sum(getattr(h, profit_field) for h in hotels if h.month_year == month_year)
+    hotels_count = Hotel.query.filter_by(created_by=current_user.id).count()
+    tickets_count = Ticket.query.filter_by(created_by=current_user.id).count()
+    employees_count = Employee.query.filter_by(created_by=current_user.id).count()
     return render_template('dashboard.html',
         total_expenses=total_expenses,
         total_salaries=total_salaries,
@@ -130,7 +148,10 @@ def dashboard():
         hotel_profits_data=hotel_profits_data,
         format_currency=format_currency,
         convert_currency=convert_currency,
-        selected_month=month_year
+        selected_month=month_year,
+        hotels_count=hotels_count,
+        tickets_count=tickets_count,
+        employees_count=employees_count
     )
 
 @app.route('/currencies', methods=['GET'])
@@ -199,29 +220,35 @@ def edit_currency():
 @permission_required('expenses')
 def expenses():
     currencies = get_all_currencies()
+    base_currency = get_base_currency()
     if request.method == 'POST':
         name = request.form['name']
         amount = float(request.form['amount'])
         currency_id = int(request.form['currency_id'])
-        # تحويل التاريخ من نص إلى كائن date
         date = request.form['date']
         from datetime import datetime
         date_obj = datetime.strptime(date, '%Y-%m-%d').date()
         notes = request.form.get('notes', '')
         month_year = request.form['month_year']
-        expense = Expense(name=name, amount=amount, currency_id=currency_id, date=date_obj, notes=notes, month_year=month_year)
+        # حساب القيم المحوّلة
+        amount_egp = convert_currency(amount, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        amount_usd = convert_currency(amount, currency_id, Currency.query.filter_by(code='USD').first().id)
+        amount_eur = convert_currency(amount, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        amount_sar = convert_currency(amount, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        expense = Expense(name=name, amount=amount, currency_id=currency_id, date=date_obj, notes=notes, month_year=month_year, created_by=current_user.id,
+                          amount_egp=amount_egp, amount_usd=amount_usd, amount_eur=amount_eur, amount_sar=amount_sar)
         db.session.add(expense)
         db.session.commit()
         flash('Expense added!')
         return redirect(url_for('expenses'))
-    expenses = Expense.query.order_by(Expense.date.desc()).all()
-    return render_template('expenses.html', expenses=expenses, currencies=currencies, format_currency=format_currency)
+    expenses = Expense.query.filter_by(created_by=current_user.id).order_by(Expense.date.desc()).all()
+    return render_template('expenses.html', expenses=expenses, currencies=currencies, base_currency=base_currency, format_currency=format_currency, attribute=getattr)
 
 @app.route('/expenses/delete', methods=['POST'])
 def delete_expense():
     expense_id = request.form['expense_id']
     expense = Expense.query.get(expense_id)
-    if expense:
+    if expense and expense.created_by == current_user.id:
         db.session.delete(expense)
         db.session.commit()
         flash('Expense deleted!')
@@ -231,6 +258,7 @@ def delete_expense():
 @permission_required('salaries')
 def salaries():
     currencies = get_all_currencies()
+    base_currency = get_base_currency()
     if request.method == 'POST':
         name = request.form['name']
         job_title = request.form['job_title']
@@ -239,23 +267,28 @@ def salaries():
         payment_date = request.form['payment_date']
         from datetime import datetime
         payment_date_obj = datetime.strptime(payment_date, '%Y-%m-%d').date()
-        employee = Employee(name=name, job_title=job_title, salary_amount=salary_amount, currency_id=currency_id, payment_date=payment_date_obj)
+        salary_egp = convert_currency(salary_amount, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        salary_usd = convert_currency(salary_amount, currency_id, Currency.query.filter_by(code='USD').first().id)
+        salary_eur = convert_currency(salary_amount, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        salary_sar = convert_currency(salary_amount, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        employee = Employee(name=name, job_title=job_title, salary_amount=salary_amount, currency_id=currency_id, payment_date=payment_date_obj, created_by=current_user.id,
+                            salary_amount_egp=salary_egp, salary_amount_usd=salary_usd, salary_amount_eur=salary_eur, salary_amount_sar=salary_sar)
         db.session.add(employee)
         db.session.commit()
         flash('Employee added!')
         return redirect(url_for('salaries'))
-    employees = Employee.query.order_by(Employee.payment_date.desc()).all()
-    return render_template('salaries.html', employees=employees, currencies=currencies, format_currency=format_currency)
+    employees = Employee.query.filter_by(created_by=current_user.id).order_by(Employee.payment_date.desc()).all()
+    return render_template('salaries.html', employees=employees, currencies=currencies, base_currency=base_currency, format_currency=format_currency, attribute=getattr)
 
 @app.route('/salaries/delete', methods=['POST'])
 def delete_employee():
     employee_id = request.form['employee_id']
     employee = Employee.query.get(employee_id)
-    if employee:
+    if employee and employee.created_by == current_user.id:
         db.session.delete(employee)
         db.session.commit()
         flash('Employee deleted!')
-    return redirect(url_for('salaries'))
+    return redirect(url_for('salaries') )
 
 @app.route('/tickets', methods=['GET', 'POST'])
 @permission_required('tickets')
@@ -271,49 +304,39 @@ def tickets():
         selling_price = float(request.form['selling_price'])
         currency_id = int(request.form['currency_id'])
         payment_fees = float(request.form.get('payment_fees', 0))
+        payment_method = request.form.get('payment_method', '')
+        notes = request.form.get('notes', '')
         profit = selling_price - purchase_price - payment_fees
         month_year = f"{request.form.get('month_year') or str(request.form.get('date', '')).split('-')[0:2]}"
-        ticket = Ticket(ticket_number=ticket_number, pnr=pnr, departure_location=departure_location, arrival_location=arrival_location, purchase_price=purchase_price, selling_price=selling_price, currency_id=currency_id, payment_fees=payment_fees, profit=profit, month_year=month_year)
+        # حساب القيم المحوّلة
+        purchase_price_egp = convert_currency(purchase_price, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        purchase_price_usd = convert_currency(purchase_price, currency_id, Currency.query.filter_by(code='USD').first().id)
+        purchase_price_eur = convert_currency(purchase_price, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        purchase_price_sar = convert_currency(purchase_price, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        selling_price_egp = convert_currency(selling_price, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        selling_price_usd = convert_currency(selling_price, currency_id, Currency.query.filter_by(code='USD').first().id)
+        selling_price_eur = convert_currency(selling_price, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        selling_price_sar = convert_currency(selling_price, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        payment_fees_egp = convert_currency(payment_fees, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        payment_fees_usd = convert_currency(payment_fees, currency_id, Currency.query.filter_by(code='USD').first().id)
+        payment_fees_eur = convert_currency(payment_fees, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        payment_fees_sar = convert_currency(payment_fees, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        profit_egp = convert_currency(profit, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        profit_usd = convert_currency(profit, currency_id, Currency.query.filter_by(code='USD').first().id)
+        profit_eur = convert_currency(profit, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        profit_sar = convert_currency(profit, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        ticket = Ticket(ticket_number=ticket_number, pnr=pnr, departure_location=departure_location, arrival_location=arrival_location, purchase_price=purchase_price, selling_price=selling_price, currency_id=currency_id, payment_fees=payment_fees, profit=profit, month_year=month_year, created_by=current_user.id,
+                        payment_method=payment_method, notes=notes,
+                        purchase_price_egp=purchase_price_egp, purchase_price_usd=purchase_price_usd, purchase_price_eur=purchase_price_eur, purchase_price_sar=purchase_price_sar,
+                        selling_price_egp=selling_price_egp, selling_price_usd=selling_price_usd, selling_price_eur=selling_price_eur, selling_price_sar=selling_price_sar,
+                        payment_fees_egp=payment_fees_egp, payment_fees_usd=payment_fees_usd, payment_fees_eur=payment_fees_eur, payment_fees_sar=payment_fees_sar,
+                        profit_egp=profit_egp, profit_usd=profit_usd, profit_eur=profit_eur, profit_sar=profit_sar)
         db.session.add(ticket)
         db.session.commit()
         flash('Ticket added!')
         return redirect(url_for('tickets'))
-    tickets = Ticket.query.order_by(Ticket.created_at.desc()).all()
-    return render_template('tickets.html', tickets=tickets, currencies=currencies, base_currency=base_currency, format_currency=format_currency, convert_currency=convert_currency)
-
-@app.route('/tickets/delete', methods=['POST'])
-def delete_ticket():
-    ticket_id = request.form['ticket_id']
-    ticket = Ticket.query.get(ticket_id)
-    if ticket:
-        db.session.delete(ticket)
-        db.session.commit()
-        flash('Ticket deleted!')
-    return redirect(url_for('tickets'))
-
-@app.route('/tickets/add', methods=['POST'])
-def add_ticket():
-    ticket_number = request.form['ticket_number']
-    pnr = request.form['pnr']
-    departure_location = request.form['departure_location']
-    arrival_location = request.form['arrival_location']
-    customer_name = request.form.get('customer_name')
-    ticket_source = request.form.get('ticket_source')
-    passengers_count = request.form.get('passengers_count', 1)
-    purchase_price = float(request.form['purchase_price'])
-    selling_price = float(request.form['selling_price'])
-    currency_id = int(request.form['currency_id'])
-    payment_fees = float(request.form.get('payment_fees', 0))
-    profit = selling_price - purchase_price - payment_fees
-    # month_year: استخدم السنة والشهر من تاريخ اليوم
-    month_year = datetime.now().strftime('%Y-%m')
-    ticket = Ticket(ticket_number=ticket_number, pnr=pnr, departure_location=departure_location, arrival_location=arrival_location, customer_name=customer_name,
-    ticket_source=ticket_source,
-    passengers_count=passengers_count,purchase_price=purchase_price, selling_price=selling_price, currency_id=currency_id, payment_fees=payment_fees, profit=profit, month_year=month_year)
-    db.session.add(ticket)
-    db.session.commit()
-    flash('Ticket added!')
-    return redirect(url_for('tickets'))
+    tickets = Ticket.query.filter_by(created_by=current_user.id).order_by(Ticket.created_at.desc()).all()
+    return render_template('tickets.html', tickets=tickets, currencies=currencies, base_currency=base_currency, format_currency=format_currency, attribute=getattr)
 
 @app.route('/hotels', methods=['GET', 'POST'])
 @permission_required('hotels')
@@ -324,7 +347,6 @@ def hotels():
         booking_number = request.form['booking_number']
         hotel_name = request.form['hotel_name']
         guest_name = request.form['guest_name']
-        # تحويل التواريخ من نص إلى كائن date
         check_in_date = datetime.strptime(request.form['check_in_date'], '%Y-%m-%d').date()
         check_out_date = datetime.strptime(request.form['check_out_date'], '%Y-%m-%d').date()
         purchase_price = float(request.form['purchase_price'])
@@ -332,25 +354,68 @@ def hotels():
         currency_id = int(request.form['currency_id'])
         payment_fees = float(request.form.get('payment_fees', 0))
         profit = selling_price - purchase_price - payment_fees
-        # month_year: استخدم السنة والشهر من تاريخ الدخول
         month_year = f"{check_in_date.year}-{check_in_date.month:02d}"
-        hotel = Hotel(booking_number=booking_number, hotel_name=hotel_name, guest_name=guest_name, check_in_date=check_in_date, check_out_date=check_out_date, purchase_price=purchase_price, selling_price=selling_price, currency_id=currency_id, payment_fees=payment_fees, profit=profit, month_year=month_year)
+        booking_source = request.form.get('booking_source', '')
+        passengers_count = request.form.get('passengers_count', 1)
+        payment_method = request.form.get('payment_method', '')
+        notes = request.form.get('notes', '')
+        # حساب القيم المحوّلة
+        purchase_price_egp = convert_currency(purchase_price, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        purchase_price_usd = convert_currency(purchase_price, currency_id, Currency.query.filter_by(code='USD').first().id)
+        purchase_price_eur = convert_currency(purchase_price, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        purchase_price_sar = convert_currency(purchase_price, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        selling_price_egp = convert_currency(selling_price, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        selling_price_usd = convert_currency(selling_price, currency_id, Currency.query.filter_by(code='USD').first().id)
+        selling_price_eur = convert_currency(selling_price, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        selling_price_sar = convert_currency(selling_price, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        payment_fees_egp = convert_currency(payment_fees, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        payment_fees_usd = convert_currency(payment_fees, currency_id, Currency.query.filter_by(code='USD').first().id)
+        payment_fees_eur = convert_currency(payment_fees, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        payment_fees_sar = convert_currency(payment_fees, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        profit_egp = convert_currency(profit, currency_id, Currency.query.filter_by(code='EGP').first().id)
+        profit_usd = convert_currency(profit, currency_id, Currency.query.filter_by(code='USD').first().id)
+        profit_eur = convert_currency(profit, currency_id, Currency.query.filter_by(code='EUR').first().id)
+        profit_sar = convert_currency(profit, currency_id, Currency.query.filter_by(code='SAR').first().id)
+        hotel = Hotel(
+            booking_number=booking_number,
+            hotel_name=hotel_name,
+            guest_name=guest_name,
+            check_in_date=check_in_date,
+            check_out_date=check_out_date,
+            purchase_price=purchase_price,
+            selling_price=selling_price,
+            currency_id=currency_id,
+            payment_fees=payment_fees,
+            profit=profit,
+            month_year=month_year,
+            created_by=current_user.id,
+            purchase_price_egp=purchase_price_egp,
+            purchase_price_usd=purchase_price_usd,
+            purchase_price_eur=purchase_price_eur,
+            purchase_price_sar=purchase_price_sar,
+            selling_price_egp=selling_price_egp,
+            selling_price_usd=selling_price_usd,
+            selling_price_eur=selling_price_eur,
+            selling_price_sar=selling_price_sar,
+            payment_fees_egp=payment_fees_egp,
+            payment_fees_usd=payment_fees_usd,
+            payment_fees_eur=payment_fees_eur,
+            payment_fees_sar=payment_fees_sar,
+            profit_egp=profit_egp,
+            profit_usd=profit_usd,
+            profit_eur=profit_eur,
+            profit_sar=profit_sar,
+            booking_source=booking_source,
+            passengers_count=passengers_count,
+            payment_method=payment_method,
+            notes=notes
+        )
         db.session.add(hotel)
         db.session.commit()
         flash('Hotel booking added!')
         return redirect(url_for('hotels'))
-    hotels = Hotel.query.order_by(Hotel.created_at.desc()).all()
-    return render_template('hotels.html', hotels=hotels, currencies=currencies, base_currency=base_currency, format_currency=format_currency, convert_currency=convert_currency)
-
-@app.route('/hotels/delete', methods=['POST'])
-def delete_hotel():
-    hotel_id = request.form['hotel_id']
-    hotel = Hotel.query.get(hotel_id)
-    if hotel:
-        db.session.delete(hotel)
-        db.session.commit()
-        flash('Hotel booking deleted!')
-    return redirect(url_for('hotels'))
+    hotels = Hotel.query.filter_by(created_by=current_user.id).order_by(Hotel.created_at.desc()).all()
+    return render_template('hotels.html', hotels=hotels, currencies=currencies, base_currency=base_currency, format_currency=format_currency, attribute=getattr)
 
 @app.route('/export', methods=['GET'])
 @permission_required('export')
@@ -364,32 +429,42 @@ def export_download():
     month_year = request.args.get('month_year')
     export_format = request.args.get('format')
 
-    # معالجة month_year لقبول MM-YYYY وتحويلها إلى YYYY-MM
     import re
     if month_year:
         match = re.match(r'^(\d{2})-(\d{4})$', month_year)
         if match:
-            # إذا كانت الصيغة MM-YYYY، حولها إلى YYYY-MM
             month_year = f"{match.group(2)}-{match.group(1)}"
 
-    # جلب البيانات بدقة حسب القسم والشهر
+    base_currency = get_base_currency()
+    currency_code = base_currency.code.lower()
+    # تحديد اسماء الحقول حسب العملة
+    expense_field = f'amount_{currency_code}'
+    salary_field = f'salary_amount_{currency_code}'
+    purchase_field = f'purchase_price_{currency_code}'
+    selling_field = f'selling_price_{currency_code}'
+    payment_fees_field = f'payment_fees_{currency_code}'
+    profit_field = f'profit_{currency_code}'
+
     if section == 'expenses':
-        data = Expense.query.filter_by(month_year=month_year).all()
+        data = Expense.query.filter_by(month_year=month_year, created_by=current_user.id).all()
         headers = ['ID', 'Name', 'Amount', 'Currency', 'Date', 'Notes', 'Month-Year']
-        rows = [[e.id, e.name, e.amount, e.currency.code if e.currency else '', e.date.strftime('%Y-%m-%d'), e.notes, e.month_year] for e in data]
+        rows = [[e.id, e.name, getattr(e, expense_field), base_currency.code, e.date.strftime('%Y-%m-%d'), e.notes, e.month_year] for e in data]
     elif section == 'salaries':
-        # جلب الرواتب التي تاريخ الدفع فيها يبدأ بهذا الشهر
-        data = Employee.query.filter(Employee.payment_date.like(f'{month_year}-%')).all()
+        data = Employee.query.filter(Employee.payment_date.like(f'{month_year}-%'), Employee.created_by==current_user.id).all()
         headers = ['ID', 'Name', 'Job Title', 'Salary', 'Currency', 'Payment Date']
-        rows = [[e.id, e.name, e.job_title, e.salary_amount, e.currency.code if e.currency else '', e.payment_date.strftime('%Y-%m-%d')] for e in data]
+        rows = [[e.id, e.name, e.job_title, getattr(e, salary_field), base_currency.code, e.payment_date.strftime('%Y-%m-%d')] for e in data]
     elif section == 'tickets':
-        data = Ticket.query.filter_by(month_year=month_year).all()
-        headers = ['ID', 'Ticket No.', 'PNR', 'From', 'To', 'Purchase', 'Selling', 'Profit', 'Currency', 'Month-Year']
-        rows = [[t.id, t.ticket_number, t.pnr, t.departure_location, t.arrival_location, t.purchase_price, t.selling_price, t.profit, t.currency.code if t.currency else '', t.month_year] for t in data]
+        data = Ticket.query.filter_by(month_year=month_year, created_by=current_user.id).all()
+        headers = ['ID', 'Ticket No.', 'PNR', 'From', 'To', 'Purchase', 'Selling', 'Profit', 'Currency', 'Month-Year', 'Payment Method', 'Notes']
+        rows = [[t.id, t.ticket_number, t.pnr, t.departure_location, t.arrival_location, getattr(t, purchase_field), getattr(t, selling_field), getattr(t, profit_field), base_currency.code, t.month_year, t.payment_method, t.notes] for t in data]
     elif section == 'hotels':
-        data = Hotel.query.filter_by(month_year=month_year).all()
-        headers = ['ID', 'Booking No.', 'Hotel', 'Guest', 'Check-in', 'Check-out', 'Purchase', 'Selling', 'Profit', 'Currency', 'Month-Year']
-        rows = [[h.id, h.booking_number, h.hotel_name, h.guest_name, h.check_in_date.strftime('%Y-%m-%d'), h.check_out_date.strftime('%Y-%m-%d'), h.purchase_price, h.selling_price, h.profit, h.currency.code if h.currency else '', h.month_year] for h in data]
+        data = Hotel.query.filter_by(month_year=month_year, created_by=current_user.id).all()
+        headers = ['ID', 'Booking No.', 'Hotel', 'Guest', 'Booking Source', 'Check-in', 'Check-out', 'Passengers', 'Purchase', 'Selling', 'Profit', 'Payment Method', 'Notes', 'Currency', 'Month-Year']
+        rows = [[h.id, h.booking_number, h.hotel_name, h.guest_name, h.booking_source, h.check_in_date.strftime('%Y-%m-%d'), h.check_out_date.strftime('%Y-%m-%d'), h.passengers_count, getattr(h, purchase_field), getattr(h, selling_field), getattr(h, profit_field), h.payment_method, h.notes, base_currency.code, h.month_year] for h in data]
+    elif section == 'visas':
+        data = Visa.query.filter_by(month_year=month_year, created_by=current_user.id).all()
+        headers = ['ID', 'Visa Type', 'Visa Duration', 'Visa Country', 'Visa Source', 'Owner Name', 'Purchase Price', 'Selling Price', 'Payment Method', 'Payment Fees', 'Profit', 'Currency', 'Notes']
+        rows = [[v.id, v.visa_type, v.visa_duration, v.visa_country, v.visa_source, v.owner_name, getattr(v, purchase_field), getattr(v, selling_field), v.payment_method, getattr(v, payment_fees_field), getattr(v, profit_field), base_currency.code, v.notes] for v in data]
     else:
         return 'Invalid section', 400
 
@@ -403,28 +478,13 @@ def export_download():
         filename = f'{section}_{month_year}.xlsx'
         return send_file(output, download_name=filename, as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     elif export_format == 'pdf':
-        from reportlab.lib.pagesizes import A4
-        from reportlab.pdfgen import canvas
         from io import BytesIO
+        from pdf_utils import create_custom_pdf
         output = BytesIO()
-        c = canvas.Canvas(output, pagesize=A4)
-        width, height = A4
-        c.setFont('Helvetica-Bold', 14)
-        c.drawString(40, height - 40, f'{section.capitalize()} - {month_year}')
-        c.setFont('Helvetica', 10)
-        y = height - 70
-        col_width = (width - 80) // len(headers)
-        for i, header in enumerate(headers):
-            c.drawString(40 + i * col_width, y, str(header))
-        y -= 20
-        for row in rows:
-            for i, cell in enumerate(row):
-                c.drawString(40 + i * col_width, y, str(cell))
-            y -= 18
-            if y < 50:
-                c.showPage()
-                y = height - 50
-        c.save()
+        logo_path = os.path.join('static', 'img', 'logo.png')
+        company_name = 'ES-Travel'
+        # يمكن تخصيص اسم الشركة حسب الإعدادات أو الترجمة
+        create_custom_pdf(output, rows, headers, logo_path, company_name, section.capitalize(), month_year)
         output.seek(0)
         filename = f'{section}_{month_year}.pdf'
         return send_file(output, download_name=filename, as_attachment=True, mimetype='application/pdf')
@@ -491,21 +551,179 @@ def pay_salary_again():
         new_month = old_date.month + 1
     from datetime import date
     new_date = date(new_year, new_month, 1)
+    # إضافة جميع الحقول المطلوبة عند إعادة التقبيض
     new_salary = Employee(
         name=employee.name,
         job_title=employee.job_title,
         salary_amount=employee.salary_amount,
         currency_id=employee.currency_id,
-        payment_date=new_date
+        payment_date=new_date,
+        created_by=employee.created_by,  # إصلاح المشكلة هنا
+        salary_amount_egp=employee.salary_amount_egp,
+        salary_amount_usd=employee.salary_amount_usd,
+        salary_amount_eur=employee.salary_amount_eur,
+        salary_amount_sar=employee.salary_amount_sar
     )
     db.session.add(new_salary)
     db.session.commit()
     flash('تم تقبيض الموظف مرة أخرى للشهر التالي بنجاح!')
     return redirect(url_for('salaries'))
 
+@app.route('/users/toggle_active', methods=['POST'])
+def toggle_user_active():
+    user_id = request.form['user_id']
+    user = Admin.query.get(user_id)
+    if user:
+        user.is_active = not user.is_active
+        db.session.commit()
+        flash('تم تحديث حالة المستخدم!')
+    else:
+        flash('المستخدم غير موجود!')
+    return redirect(url_for('users'))
+
+@app.route('/users/delete', methods=['POST'])
+def delete_user():
+    user_id = request.form['user_id']
+    user = Admin.query.get(user_id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        flash('تم حذف المستخدم!')
+    else:
+        flash('المستخدم غير موجود!')
+    return redirect(url_for('users'))
+
+
+@app.route('/users/edit/<int:user_id>', methods=['GET', 'POST'])
+def edit_user(user_id):
+    user = Admin.query.get(user_id)
+    currencies = get_all_currencies()
+    if not user:
+        flash('المستخدم غير موجود!')
+        return redirect(url_for('users'))
+    if request.method == 'POST':
+        user.email = request.form['email']
+        if request.form['password']:
+            user.set_password(request.form['password'])
+        user.role = request.form['role']
+        user.permissions = json.dumps(request.form.getlist('permissions'), ensure_ascii=False)
+        user.preferred_currency_id = int(request.form['preferred_currency_id'])
+        db.session.commit()
+        flash('تم تحديث بيانات المستخدم!')
+        return redirect(url_for('users'))
+    # فك صلاحيات الوصول
+    try:
+        user_permissions = json.loads(user.permissions) if user.permissions else []
+    except Exception:
+        user_permissions = []
+    return render_template('edit_user.html', user=user, currencies=currencies, user_permissions=user_permissions)
+
+
+@app.route('/visas', methods=['GET', 'POST'])
+@permission_required('visas')
+def visas():
+    currencies = get_all_currencies()
+    base_currency = get_base_currency()
+    if request.method == 'POST':
+        visa_type = request.form['visa_type']
+        visa_duration = request.form['visa_duration']
+        visa_country = request.form['visa_country']
+        visa_source = request.form.get('visa_source', '')
+        owner_name = request.form['owner_name']
+        purchase_price = float(request.form['purchase_price'])
+        selling_price = float(request.form['selling_price'])
+        payment_method = request.form.get('payment_method', '')
+        payment_fees = float(request.form.get('payment_fees', 0))
+        notes = request.form.get('notes', '')
+        currency_id = int(request.form['currency_id'])
+        profit = selling_price - purchase_price - payment_fees
+        month_year = request.form.get('month_year')
+        if not month_year:
+            from datetime import datetime
+            month_year = f"{datetime.now().year}-{datetime.now().month:02d}"
+        egp = Currency.query.filter_by(code='EGP').first()
+        usd = Currency.query.filter_by(code='USD').first()
+        eur = Currency.query.filter_by(code='EUR').first()
+        sar = Currency.query.filter_by(code='SAR').first()
+        if not all([egp, usd, eur, sar]):
+            flash('يجب التأكد من وجود جميع العملات الرئيسية (EGP, USD, EUR, SAR) في قاعدة البيانات!')
+            return redirect(url_for('visas'))
+        purchase_price_egp = convert_currency(purchase_price, currency_id, egp.id)
+        purchase_price_usd = convert_currency(purchase_price, currency_id, usd.id)
+        purchase_price_eur = convert_currency(purchase_price, currency_id, eur.id)
+        purchase_price_sar = convert_currency(purchase_price, currency_id, sar.id)
+        selling_price_egp = convert_currency(selling_price, currency_id, egp.id)
+        selling_price_usd = convert_currency(selling_price, currency_id, usd.id)
+        selling_price_eur = convert_currency(selling_price, currency_id, eur.id)
+        selling_price_sar = convert_currency(selling_price, currency_id, sar.id)
+        payment_fees_egp = convert_currency(payment_fees, currency_id, egp.id)
+        payment_fees_usd = convert_currency(payment_fees, currency_id, usd.id)
+        payment_fees_eur = convert_currency(payment_fees, currency_id, eur.id)
+        payment_fees_sar = convert_currency(payment_fees, currency_id, sar.id)
+        profit_egp = convert_currency(profit, currency_id, egp.id)
+        profit_usd = convert_currency(profit, currency_id, usd.id)
+        profit_eur = convert_currency(profit, currency_id, eur.id)
+        profit_sar = convert_currency(profit, currency_id, sar.id)
+        visa = Visa(
+            visa_type=visa_type,
+            visa_duration=visa_duration,
+            visa_country=visa_country,
+            visa_source=visa_source,
+            owner_name=owner_name,
+            purchase_price=purchase_price,
+            selling_price=selling_price,
+            payment_method=payment_method,
+            payment_fees=payment_fees,
+            profit=profit,
+            currency_id=currency_id,
+            month_year=month_year,
+            created_by=current_user.id,
+            notes=notes,
+            purchase_price_egp=purchase_price_egp,
+            purchase_price_usd=purchase_price_usd,
+            purchase_price_eur=purchase_price_eur,
+            purchase_price_sar=purchase_price_sar,
+            selling_price_egp=selling_price_egp,
+            selling_price_usd=selling_price_usd,
+            selling_price_eur=selling_price_eur,
+            selling_price_sar=selling_price_sar,
+            payment_fees_egp=payment_fees_egp,
+            payment_fees_usd=payment_fees_usd,
+            payment_fees_eur=payment_fees_eur,
+            payment_fees_sar=payment_fees_sar,
+            profit_egp=profit_egp,
+            profit_usd=profit_usd,
+            profit_eur=profit_eur,
+            profit_sar=profit_sar
+        )
+        db.session.add(visa)
+        db.session.commit()
+        flash('تمت إضافة التأشيرة بنجاح!')
+        return redirect(url_for('visas'))
+    visas = Visa.query.filter_by(created_by=current_user.id).order_by(Visa.created_at.desc()).all()
+    return render_template('visas.html', visas=visas, currencies=currencies, base_currency=base_currency, format_currency=format_currency, attribute=getattr)
+
+@app.route('/visas/delete', methods=['POST'])
+def delete_visa():
+    visa_id = request.form['visa_id']
+    visa = Visa.query.get(visa_id)
+    if visa and visa.created_by == current_user.id:
+        db.session.delete(visa)
+        db.session.commit()
+        flash('تم حذف التأشيرة!')
+    return redirect(url_for('visas'))
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.')
+    return redirect(url_for('login'))
+
+
 # Inject get_locale and convert_currency into Jinja2 templates
 def inject_get_locale():
-    return dict(get_locale=get_locale, convert_currency=convert_currency, format_currency=format_currency)
+    return dict(get_locale=get_locale, convert_currency=convert_currency, format_currency=format_currency, attribute=getattr)
 app.context_processor(inject_get_locale)
 
 if __name__ == '__main__':

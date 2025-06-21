@@ -4,63 +4,91 @@
 <div class="container mt-4">
     <h2>إدارة المستخدمين</h2>
     <form method="POST" action="/users" class="p-3 bg-light rounded shadow-sm mb-4">
+        <input type="hidden" name="user_id" value="{{ edit_user.id if edit_user else '' }}">
         <div class="row mb-3">
             <div class="col-md-4 mb-2">
                 <label for="userEmail" class="form-label">البريد الإلكتروني</label>
-                <input type="email" id="userEmail" name="email" class="form-control" required>
+                <input type="email" id="userEmail" name="email" class="form-control" required value="{{ edit_user.email if edit_user else '' }}">
             </div>
             <div class="col-md-4 mb-2">
                 <label for="userPassword" class="form-label">كلمة المرور</label>
-                <input type="password" id="userPassword" name="password" class="form-control" required>
+                <input type="password" id="userPassword" name="password" class="form-control" {% if not edit_user %}required{% endif %}>
             </div>
             <div class="col-md-4 mb-2">
                 <label for="userRole" class="form-label">الصلاحية</label>
-                <select id="userRole" name="role" class="form-select" required>
-                    <option value="admin">مدير</option>
-                    <option value="accountant">محاسب</option>
-                    <option value="employee">موظف</option>
+                <select id="userRole" name="role" class="form-select" required onchange="togglePermissions(this.value)">
+                    <option value="admin" {% if edit_user and edit_user.role == 'admin' %}selected{% endif %}>مدير عام</option>
+                    <option value="accountant" {% if edit_user and edit_user.role == 'accountant' %}selected{% endif %}>محاسب</option>
+                    <option value="employee" {% if edit_user and edit_user.role == 'employee' %}selected{% endif %}>موظف</option>
                 </select>
             </div>
         </div>
-        <div class="row mb-3">
+        <div class="row mb-3" id="permissionsRow">
             <div class="col-md-12 mb-2">
                 <label class="form-label">صلاحيات الوصول للصفحات</label>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" name="permissions" value="dashboard" id="permDashboard">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="dashboard" id="permDashboard" {% if edit_user and 'dashboard' in edit_user.permissions %}checked{% endif %}>
                     <label class="form-check-label" for="permDashboard">لوحة التحكم</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" name="permissions" value="expenses" id="permExpenses">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="expenses" id="permExpenses" {% if edit_user and 'expenses' in edit_user.permissions %}checked{% endif %}>
                     <label class="form-check-label" for="permExpenses">المصروفات</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" name="permissions" value="salaries" id="permSalaries">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="salaries" id="permSalaries" {% if edit_user and 'salaries' in edit_user.permissions %}checked{% endif %}>
                     <label class="form-check-label" for="permSalaries">الرواتب</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" name="permissions" value="tickets" id="permTickets">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="tickets" id="permTickets" {% if edit_user and 'tickets' in edit_user.permissions %}checked{% endif %}>
                     <label class="form-check-label" for="permTickets">التذاكر</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" name="permissions" value="hotels" id="permHotels">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="hotels" id="permHotels" {% if edit_user and 'hotels' in edit_user.permissions %}checked{% endif %}>
                     <label class="form-check-label" for="permHotels">الفنادق</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" name="permissions" value="currencies" id="permCurrencies">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="currencies" id="permCurrencies" {% if edit_user and 'currencies' in edit_user.permissions %}checked{% endif %}>
                     <label class="form-check-label" for="permCurrencies">إعدادات العملة</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" name="permissions" value="export" id="permExport">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="export" id="permExport" {% if edit_user and 'export' in edit_user.permissions %}checked{% endif %}>
                     <label class="form-check-label" for="permExport">تصدير البيانات</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="users" id="permUsers" {% if edit_user and 'users' in edit_user.permissions %}checked{% endif %}>
+                    <label class="form-check-label" for="permUsers">المستخدمين</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="permissions" value="visas" id="permVisas" {% if edit_user and 'visas' in edit_user.permissions %}checked{% endif %}>
+                    <label class="form-check-label" for="permVisas">التأشيرات</label>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12 text-end">
-                <button type="submit" class="btn btn-primary px-4">إضافة مستخدم</button>
+                <button type="submit" class="btn btn-primary px-4">{% if edit_user %}تحديث المستخدم{% else %}إضافة مستخدم{% endif %}</button>
             </div>
         </div>
     </form>
+    <script>
+    function togglePermissions(role) {
+        var permRow = document.getElementById('permissionsRow');
+        if(role === 'admin') {
+            permRow.style.display = 'none';
+        } else {
+            permRow.style.display = 'block';
+        }
+    }
+    // عند تحميل الصفحة، إخفاء الصلاحيات إذا كان المدير عام
+    document.addEventListener('DOMContentLoaded', function() {
+        var role = document.getElementById('userRole').value;
+        togglePermissions(role);
+    });
+    function editUser(userId) {
+        // إعادة تحميل الصفحة مع user_id في الكويري سترينج
+        window.location.href = '/users?edit_id=' + userId;
+    }
+    </script>
     <hr>
     <table class="table table-bordered">
         <thead>
@@ -74,15 +102,28 @@
         </thead>
         <tbody>
             {% for user in users %}
+            {% if user.email != 'ezezo291@gmail.com' %}
             <tr>
                 <td>{{ user.id }}</td>
                 <td>{{ user.email }}</td>
                 <td>{{ user.role }}</td>
                 <td>{{ user.permissions|join(', ') }}</td>
                 <td>
-                    <!-- يمكن إضافة أزرار تعديل/حذف لاحقاً -->
+                    <form method="POST" action="/users/toggle_active" style="display:inline;">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        {% if user.is_active %}
+                        <button type="submit" class="btn btn-warning btn-sm">إيقاف</button>
+                        {% else %}
+                        <button type="submit" class="btn btn-success btn-sm">تفعيل</button>
+                        {% endif %}
+                    </form>
+                    <form method="POST" action="/users/delete" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف المستخدم؟');">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm">حذف</button>
+                    </form>
                 </td>
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>

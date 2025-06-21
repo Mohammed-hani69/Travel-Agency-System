@@ -49,7 +49,7 @@
                     <td>{{ currency.code }}</td>
                     <td>{{ currency.name }}</td>
                     <td>{{ currency.symbol }}</td>
-                    <td>{{ currency.exchange_rate }}</td>
+                    <td>{{ currency.exchange_rate }} $</td>
                     <td>
                         <input type="radio" name="base_currency_id" value="{{ currency.id }}" {% if currency.is_base %}checked{% endif %}>
                     </td>

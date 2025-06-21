@@ -61,10 +61,36 @@
         <div class="col-md-3">
             <div class="card text-center" style="background-color: #198754; color: #fff;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ _('hotel_profits') }}</h5>
+                    <h5 class="card-title">{{ _('hotel_profits') if _('hotel_profits') != 'hotel_profits' else 'ربح الفنادق' }}</h5>
                     <p class="card-text">
                         {{ format_currency(hotel_profits, base_currency.id) }}
                     </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <div class="card text-center" style="background-color: #6f42c1; color: #fff;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('tickets_count') if _('tickets_count') != 'tickets_count' else 'عدد التذاكر' }}</h5>
+                    <p class="card-text">{{ tickets_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center" style="background-color: #20c997; color: #fff;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('employees_count') if _('employees_count') != 'employees_count' else 'عدد الموظفين' }}</h5>
+                    <p class="card-text">{{ employees_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center" style="background-color: #fd7e14; color: #fff;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ _('hotels_count') if _('hotels_count') != 'hotels_count' else 'عدد الفنادق' }}</h5>
+                    <p class="card-text">{{ hotels_count }}</p>
                 </div>
             </div>
         </div>

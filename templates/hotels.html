@@ -33,6 +33,16 @@
                 <input type="text" id="guestName" name="guest_name" class="form-control" placeholder="اسم النزيل" required>
             </div>
             <div class="col-md-2 mb-2">
+                <label for="bookingSource" class="form-label">مصدر الحجز</label>
+                <input type="text" id="bookingSource" name="booking_source" class="form-control" placeholder="مصدر الحجز">
+            </div>
+            <div class="col-md-2 mb-2">
+                <label for="passengersCount" class="form-label">عدد الأفراد</label>
+                <input type="number" id="passengersCount" name="passengers_count" class="form-control" min="1" value="1">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-2 mb-2">
                 <label for="checkInDate" class="form-label">تاريخ الدخول</label>
                 <input type="date" id="checkInDate" name="check_in_date" class="form-control" required>
             </div>
@@ -62,6 +72,14 @@
                 <label for="paymentFees" class="form-label">رسوم الدفع</label>
                 <input type="number" step="0.01" id="paymentFees" name="payment_fees" class="form-control" placeholder="رسوم الدفع" value="0">
             </div>
+            <div class="col-md-2 mb-2">
+                <label for="paymentMethod" class="form-label">طريقة الدفع</label>
+                <input type="text" id="paymentMethod" name="payment_method" class="form-control" placeholder="طريقة الدفع">
+            </div>
+            <div class="col-md-2 mb-2">
+                <label for="hotelNotes" class="form-label">ملاحظات</label>
+                <input type="text" id="hotelNotes" name="notes" class="form-control" placeholder="ملاحظات">
+            </div>
         </div>
         <div class="row">
             <div class="col-md-12 text-end">
@@ -77,51 +95,47 @@
                 <th>رقم الحجز</th>
                 <th>اسم الفندق</th>
                 <th>اسم النزيل</th>
+                <th>مصدر الحجز</th>
+                <th>عدد الأفراد</th>
                 <th>تاريخ الدخول</th>
                 <th>تاريخ الخروج</th>
                 <th>سعر الشراء</th>
                 <th>سعر البيع</th>
                 <th>رسوم الدفع</th>
+                <th>طريقة الدفع</th>
+                <th>ملاحظات</th>
                 <th>الربح</th>
                 <th>{{ _('currency') }}</th>
                 <th>{{ _('actions') }}</th>
             </tr>
         </thead>
         <tbody>
-            {% set base_currency = currencies|selectattr('is_base')|first %}
+            {% set currency_code = base_currency.code.lower() %}
             {% for hotel in hotels %}
             <tr>
                 <td>{{ hotel.id }}</td>
                 <td>{{ hotel.booking_number }}</td>
                 <td>{{ hotel.hotel_name }}</td>
                 <td>{{ hotel.guest_name }}</td>
+                <td>{{ hotel.booking_source }}</td>
+                <td>{{ hotel.passengers_count }}</td>
                 <td>{{ hotel.check_in_date }}</td>
                 <td>{{ hotel.check_out_date }}</td>
                 <td>
-                  {{ format_currency(hotel.purchase_price, hotel.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(hotel.purchase_price, hotel.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {{ format_currency(attribute(hotel, 'purchase_price_' ~ currency_code), base_currency.id) }}
                 </td>
                 <td>
-                  {{ format_currency(hotel.selling_price, hotel.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(hotel.selling_price, hotel.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {{ format_currency(attribute(hotel, 'selling_price_' ~ currency_code), base_currency.id) }}
                 </td>
                 <td>
-                  {{ format_currency(hotel.payment_fees, hotel.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(hotel.payment_fees, hotel.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {{ format_currency(attribute(hotel, 'payment_fees_' ~ currency_code), base_currency.id) }}
                 </td>
+                <td>{{ hotel.payment_method }}</td>
+                <td>{{ hotel.notes }}</td>
                 <td>
-                  {{ format_currency(hotel.profit, hotel.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(hotel.profit, hotel.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {{ format_currency(attribute(hotel, 'profit_' ~ currency_code), base_currency.id) }}
                 </td>
-                <td>{{ hotel.currency.code }}</td>
+                <td>{{ base_currency.code }}</td>
                 <td>
                     <form method="POST" action="/hotels/delete" style="display:inline;">
                         <input type="hidden" name="hotel_id" value="{{ hotel.id }}">

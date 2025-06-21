@@ -18,7 +18,7 @@
             </div>
         </div>
     </div>
-    <form method="POST" action="/tickets/add" class="p-4 bg-light rounded shadow-sm mb-4">
+    <form method="POST" action="/tickets" class="p-4 bg-light rounded shadow-sm mb-4">
     <div class="row mb-3">
         <div class="col-md-3">
             <label for="ticketNumber" class="form-label">رقم التذكرة</label>
@@ -75,6 +75,16 @@
             <input type="number" step="0.01" id="paymentFees" name="payment_fees" class="form-control" placeholder="رسوم الدفع" value="0">
         </div>
     </div>
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label for="paymentMethod" class="form-label">طريقة الدفع</label>
+            <input type="text" id="paymentMethod" name="payment_method" class="form-control" placeholder="مثال: كاش / تحويل / فيزا ...">
+        </div>
+        <div class="col-md-8">
+            <label for="notes" class="form-label">ملاحظات</label>
+            <input type="text" id="notes" name="notes" class="form-control" placeholder="أي ملاحظات إضافية">
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-md-12 text-end">
@@ -82,7 +92,6 @@
         </div>
     </div>
 </form>
-
     <hr>
     <table class="table table-bordered">
         <thead>
@@ -100,11 +109,13 @@
                 <th>رسوم الدفع</th>
                 <th>الربح</th>
                 <th>{{ _('currency') }}</th>
+                <th>طريقة الدفع</th>
+                <th>ملاحظات</th>
                 <th>{{ _('actions') }}</th>
             </tr>
         </thead>
         <tbody>
-            {% set base_currency = currencies|selectattr('is_base')|first %}
+            {% set currency_code = base_currency.code.lower() %}
             {% for ticket in tickets %}
             <tr>
                 <td>{{ ticket.id }}</td>
@@ -116,30 +127,20 @@
                 <td>{{ ticket.ticket_source }}</td>
                 <td>{{ ticket.passengers_count }}</td>
                 <td>
-                  {{ format_currency(ticket.purchase_price, ticket.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(ticket.purchase_price, ticket.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {{ format_currency(attribute(ticket, 'purchase_price_' ~ currency_code), base_currency.id) }}
                 </td>
                 <td>
-                  {{ format_currency(ticket.selling_price, ticket.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(ticket.selling_price, ticket.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {{ format_currency(attribute(ticket, 'selling_price_' ~ currency_code), base_currency.id) }}
                 </td>
                 <td>
-                  {{ format_currency(ticket.payment_fees, ticket.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(ticket.payment_fees, ticket.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {{ format_currency(attribute(ticket, 'payment_fees_' ~ currency_code), base_currency.id) }}
                 </td>
                 <td>
-                  {{ format_currency(ticket.profit, ticket.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(ticket.profit, ticket.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {{ format_currency(attribute(ticket, 'profit_' ~ currency_code), base_currency.id) }}
                 </td>
-                <td>{{ ticket.currency.code }}</td>
+                <td>{{ base_currency.code }}</td>
+                <td>{{ ticket.payment_method }}</td>
+                <td>{{ ticket.notes }}</td>
                 <td>
                     <form method="POST" action="/tickets/delete" style="display:inline;">
                         <input type="hidden" name="ticket_id" value="{{ ticket.id }}">

@@ -57,17 +57,15 @@
         </thead>
         <tbody>
             {% set base_currency = currencies|selectattr('is_base')|first %}
+            {% set currency_code = base_currency.code.lower() %}
             {% for expense in expenses %}
             <tr>
                 <td>{{ expense.id }}</td>
                 <td>{{ expense.name }}</td>
                 <td>
-                  {{ format_currency(expense.amount, expense.currency_id) }}<br>
-                  <span class="text-info small">
-                    ({{ format_currency(convert_currency(expense.amount, expense.currency_id, base_currency.id), base_currency.id) }})
-                  </span>
+                  {{ format_currency(attribute(expense, 'amount_' ~ currency_code), base_currency.id) }}
                 </td>
-                <td>{{ expense.currency.code }}</td>
+                <td>{{ base_currency.code }}</td>
                 <td>{{ expense.date }}</td>
                 <td>{{ expense.notes }}</td>
                 <td>

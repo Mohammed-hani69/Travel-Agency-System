@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('visas') if _('visas') != 'visas' else 'التأشيرات' }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ _('visas') if _('visas') != 'visas' else 'التأشيرات' }}</h2>
+    <form method="POST" action="/visas" class="p-3 bg-light rounded shadow-sm mb-4">
+        <div class="row mb-3">
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('visa_type') if _('visa_type') != 'visa_type' else 'نوع التأشيرة' }}</label>
+                <input type="text" name="visa_type" class="form-control" required>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('visa_duration') if _('visa_duration') != 'visa_duration' else 'مدة التأشيرة' }}</label>
+                <input type="text" name="visa_duration" class="form-control" required>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('visa_country') if _('visa_country') != 'visa_country' else 'بلد التأشيرة' }}</label>
+                <input type="text" name="visa_country" class="form-control" required>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('visa_source') if _('visa_source') != 'visa_source' else 'مصدر التأشيرة' }}</label>
+                <input type="text" name="visa_source" class="form-control">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('owner_name') if _('owner_name') != 'owner_name' else 'اسم صاحب التأشيرة' }}</label>
+                <input type="text" name="owner_name" class="form-control" required>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('purchase_price') if _('purchase_price') != 'purchase_price' else 'سعر الشراء' }}</label>
+                <input type="number" step="0.01" name="purchase_price" class="form-control" required>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('selling_price') if _('selling_price') != 'selling_price' else 'سعر البيع' }}</label>
+                <input type="number" step="0.01" name="selling_price" class="form-control" required>
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('payment_method') if _('payment_method') != 'payment_method' else 'طريقة الدفع' }}</label>
+                <input type="text" name="payment_method" class="form-control">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('payment_fees') if _('payment_fees') != 'payment_fees' else 'رسوم طريقة الدفع' }}</label>
+                <input type="number" step="0.01" name="payment_fees" class="form-control" value="0">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-3 mb-2">
+                <label class="form-label">{{ _('currency') if _('currency') != 'currency' else 'العملة' }}</label>
+                <select name="currency_id" class="form-select" required>
+                    {% for currency in currencies %}
+                        <option value="{{ currency.id }}">{{ currency.code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-9 mb-2">
+                <label class="form-label">{{ _('notes') if _('notes') != 'notes' else 'ملاحظات' }}</label>
+                <input type="text" name="notes" class="form-control">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-end">
+                <button type="submit" class="btn btn-primary px-4">{{ _('add_new') if _('add_new') != 'add_new' else 'إضافة' }}</button>
+            </div>
+        </div>
+    </form>
+    <hr>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>{{ _('visa_type') if _('visa_type') != 'visa_type' else 'نوع التأشيرة' }}</th>
+                <th>{{ _('visa_duration') if _('visa_duration') != 'visa_duration' else 'مدة التأشيرة' }}</th>
+                <th>{{ _('visa_country') if _('visa_country') != 'visa_country' else 'بلد التأشيرة' }}</th>
+                <th>{{ _('visa_source') if _('visa_source') != 'visa_source' else 'مصدر التأشيرة' }}</th>
+                <th>{{ _('owner_name') if _('owner_name') != 'owner_name' else 'اسم صاحب التأشيرة' }}</th>
+                <th>{{ _('purchase_price') if _('purchase_price') != 'purchase_price' else 'سعر الشراء' }}</th>
+                <th>{{ _('selling_price') if _('selling_price') != 'selling_price' else 'سعر البيع' }}</th>
+                <th>{{ _('payment_method') if _('payment_method') != 'payment_method' else 'طريقة الدفع' }}</th>
+                <th>{{ _('payment_fees') if _('payment_fees') != 'payment_fees' else 'رسوم الدفع' }}</th>
+                <th>{{ _('profit') if _('profit') != 'profit' else 'الربح' }}</th>
+                <th>{{ _('currency') if _('currency') != 'currency' else 'العملة' }}</th>
+                <th>{{ _('notes') if _('notes') != 'notes' else 'ملاحظات' }}</th>
+                <th>{{ _('actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set currency_code = base_currency.code.lower() %}
+            {% for visa in visas %}
+            <tr>
+                <td>{{ visa.id }}</td>
+                <td>{{ visa.visa_type }}</td>
+                <td>{{ visa.visa_duration }}</td>
+                <td>{{ visa.visa_country }}</td>
+                <td>{{ visa.visa_source }}</td>
+                <td>{{ visa.owner_name }}</td>
+                <td>{{ format_currency(attribute(visa, 'purchase_price_' ~ currency_code), base_currency.id) }}</td>
+                <td>{{ format_currency(attribute(visa, 'selling_price_' ~ currency_code), base_currency.id) }}</td>
+                <td>{{ visa.payment_method }}</td>
+                <td>{{ format_currency(attribute(visa, 'payment_fees_' ~ currency_code), base_currency.id) }}</td>
+                <td>{{ format_currency(attribute(visa, 'profit_' ~ currency_code), base_currency.id) }}</td>
+                <td>{{ base_currency.code }}</td>
+                <td>{{ visa.notes }}</td>
+                <td>
+                    <form method="POST" action="/visas/delete" style="display:inline;">
+                        <input type="hidden" name="visa_id" value="{{ visa.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm">{{ _('delete') }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
