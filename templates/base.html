@@ -474,11 +474,13 @@
                 <i class="fa-solid fa-coins"></i> {% if get_locale() == 'ar' %}إعدادات العملات{% else %}Currency Settings{% endif %}
             </a>
             {% endif %}
+            <!--
             {% if 'export' in perms %}
             <a class="nav-link {% if '/export' in request.path %}active{% endif %}" href="/export">
                 <i class="fa-solid fa-file-export"></i> {% if get_locale() == 'ar' %}تصدير التقارير{% else %}Export Reports{% endif %}
             </a>
             {% endif %}
+        -->
             {% if 'users' in perms %}
             <a class="nav-link {% if '/users' in request.path %}active{% endif %}" href="/users">
                 <i class="fa-solid fa-users-gear"></i> {% if get_locale() == 'ar' %}إدارة المستخدمين{% else %}Users Management{% endif %}
