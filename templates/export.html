@@ -1,21 +1,21 @@
 {% extends 'base.html' %}
-{% block title %}{{ _('export') }}{% endblock %}
+{% block title %}{% if get_locale() == 'ar' %}تصدير التقارير{% else %}Export Reports{% endif %}{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ _('export') }}</h2>
+    <h2>{% if get_locale() == 'ar' %}تصدير التقارير{% else %}Export Reports{% endif %}</h2>
     <form method="GET" action="/export/download">
         <div class="row">
             <div class="col-md-3">
                 <select name="section" class="form-select" required>
-                    <option value="expenses">{{ _('expenses') }}</option>
-                    <option value="salaries">{{ _('salaries') }}</option>
-                    <option value="tickets">{{ _('tickets') }}</option>
-                    <option value="hotels">{{ _('hotels') }}</option>
-                    <option value="visas">{{ _('visas') if _('visas') != 'visas' else 'التأشيرات' }}</option>
+                    <option value="expenses">{% if get_locale() == 'ar' %}المصروفات{% else %}Expenses{% endif %}</option>
+                    <option value="salaries">{% if get_locale() == 'ar' %}الرواتب{% else %}Salaries{% endif %}</option>
+                    <option value="tickets">{% if get_locale() == 'ar' %}التذاكر{% else %}Tickets{% endif %}</option>
+                    <option value="hotels">{% if get_locale() == 'ar' %}الفنادق{% else %}Hotels{% endif %}</option>
+                    <option value="visas">{% if get_locale() == 'ar' %}التأشيرات{% else %}Visas{% endif %}</option>
                 </select>
             </div>
             <div class="col-md-3">
-                <input type="text" name="month_year" class="form-control" placeholder="YYYY-MM" required>
+                <input type="text" name="month_year" class="form-control" placeholder="{% if get_locale() == 'ar' %}سنة-شهر (مثال: 2024-06){% else %}YYYY-MM{% endif %}" required>
             </div>
             <div class="col-md-3">
                 <select name="format" class="form-select" required>
@@ -24,7 +24,7 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <button type="submit" class="btn btn-primary">{{ _('export') }}</button>
+                <button type="submit" class="btn btn-primary">{% if get_locale() == 'ar' %}تصدير{% else %}Export{% endif %}</button>
             </div>
         </div>
     </form>

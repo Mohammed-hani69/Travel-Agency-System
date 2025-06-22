@@ -1,0 +1,232 @@
+# Translations template for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-06-22 18:24+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: templates/base.html:6
+msgid "site_name"
+msgstr ""
+
+#: templates/base.html:444 templates/dashboard.html:2
+#: templates/dashboard.html:20 templates/dashboard.html:243
+msgid "dashboard"
+msgstr ""
+
+#: templates/base.html:449 templates/expenses.html:2 templates/expenses.html:5
+#: templates/export.html:10
+msgid "expenses"
+msgstr ""
+
+#: templates/base.html:454 templates/export.html:11 templates/salaries.html:2
+#: templates/salaries.html:5
+msgid "salaries"
+msgstr ""
+
+#: templates/base.html:459 templates/export.html:12 templates/tickets.html:2
+#: templates/tickets.html:5
+msgid "tickets"
+msgstr ""
+
+#: templates/base.html:464 templates/export.html:13 templates/hotels.html:2
+#: templates/hotels.html:5
+msgid "hotels"
+msgstr ""
+
+#: templates/base.html:469 templates/export.html:14 templates/visas.html:2
+#: templates/visas.html:5
+msgid "visas"
+msgstr ""
+
+#: templates/base.html:474 templates/currency_settings.html:2
+#: templates/currency_settings.html:5
+msgid "currency_settings"
+msgstr ""
+
+#: templates/base.html:479 templates/export.html:2 templates/export.html:5
+#: templates/export.html:27
+msgid "export"
+msgstr ""
+
+#: templates/base.html:484
+msgid "users_management"
+msgstr ""
+
+#: templates/base.html:488
+msgid "logout"
+msgstr ""
+
+#: templates/currency_settings.html:10 templates/currency_settings.html:11
+#: templates/currency_settings.html:31 templates/currency_settings.html:37
+#: templates/expenses.html:17 templates/expenses.html:52
+#: templates/hotels.html:64 templates/hotels.html:108
+#: templates/salaries.html:23 templates/salaries.html:49
+#: templates/tickets.html:66 templates/tickets.html:111 templates/visas.html:49
+#: templates/visas.html:82
+msgid "currency"
+msgstr ""
+
+#: templates/currency_settings.html:14 templates/currency_settings.html:15
+#: templates/currency_settings.html:38 templates/expenses.html:9
+#: templates/expenses.html:10 templates/expenses.html:50
+#: templates/salaries.html:9 templates/salaries.html:10
+#: templates/salaries.html:46
+msgid "name"
+msgstr ""
+
+#: templates/currency_settings.html:26 templates/currency_settings.html:99
+#: templates/expenses.html:41 templates/hotels.html:86
+#: templates/salaries.html:37 templates/tickets.html:91 templates/visas.html:63
+msgid "add_new"
+msgstr ""
+
+#: templates/currency_settings.html:31
+msgid "settings"
+msgstr ""
+
+#: templates/currency_settings.html:42 templates/expenses.html:55
+#: templates/hotels.html:109 templates/salaries.html:51
+#: templates/tickets.html:114 templates/visas.html:84
+msgid "actions"
+msgstr ""
+
+#: templates/currency_settings.html:59 templates/expenses.html:74
+#: templates/hotels.html:142 templates/salaries.html:71
+#: templates/tickets.html:147 templates/visas.html:107
+msgid "delete"
+msgstr ""
+
+#: templates/currency_settings.html:67
+msgid "edit"
+msgstr ""
+
+#: templates/currency_settings.html:91
+msgid "save"
+msgstr ""
+
+#: templates/dashboard.html:9 templates/dashboard.html:109
+#: templates/dashboard.html:111 templates/expenses.html:31
+msgid "month"
+msgstr ""
+
+#: templates/dashboard.html:25 templates/dashboard.html:109
+#: templates/dashboard.html:156 templates/dashboard.html:179
+#: templates/dashboard.html:186 templates/dashboard.html:190
+#: templates/dashboard.html:194
+msgid "net_profit"
+msgstr ""
+
+#: templates/dashboard.html:34 templates/dashboard.html:213
+msgid "total_expenses"
+msgstr ""
+
+#: templates/dashboard.html:44 templates/dashboard.html:218
+msgid "total_salaries"
+msgstr ""
+
+#: templates/dashboard.html:54 templates/dashboard.html:223
+msgid "ticket_profits"
+msgstr ""
+
+#: templates/dashboard.html:64 templates/dashboard.html:228
+msgid "hotel_profits"
+msgstr ""
+
+#: templates/dashboard.html:74 templates/dashboard.html:233
+msgid "visa_profits"
+msgstr ""
+
+#: templates/dashboard.html:84
+msgid "hotels_count"
+msgstr ""
+
+#: templates/dashboard.html:92
+msgid "tickets_count"
+msgstr ""
+
+#: templates/dashboard.html:100
+msgid "visas_count"
+msgstr ""
+
+#: templates/dashboard.html:112
+msgid "year"
+msgstr ""
+
+#: templates/dashboard.html:203
+msgid "day"
+msgstr ""
+
+#: templates/expenses.html:13 templates/expenses.html:14
+#: templates/expenses.html:51 templates/salaries.html:17
+#: templates/salaries.html:18 templates/salaries.html:48
+msgid "amount"
+msgstr ""
+
+#: templates/expenses.html:27 templates/expenses.html:53
+#: templates/salaries.html:31 templates/salaries.html:50
+msgid "date"
+msgstr ""
+
+#: templates/expenses.html:35 templates/expenses.html:36
+#: templates/expenses.html:54 templates/visas.html:57 templates/visas.html:83
+msgid "notes"
+msgstr ""
+
+#: templates/salaries.html:13 templates/salaries.html:14
+#: templates/salaries.html:47
+msgid "job_title"
+msgstr ""
+
+#: templates/visas.html:9 templates/visas.html:72
+msgid "visa_type"
+msgstr ""
+
+#: templates/visas.html:13 templates/visas.html:73
+msgid "visa_duration"
+msgstr ""
+
+#: templates/visas.html:17 templates/visas.html:74
+msgid "visa_country"
+msgstr ""
+
+#: templates/visas.html:21 templates/visas.html:75
+msgid "visa_source"
+msgstr ""
+
+#: templates/visas.html:25 templates/visas.html:76
+msgid "owner_name"
+msgstr ""
+
+#: templates/visas.html:31 templates/visas.html:77
+msgid "purchase_price"
+msgstr ""
+
+#: templates/visas.html:35 templates/visas.html:78
+msgid "selling_price"
+msgstr ""
+
+#: templates/visas.html:39 templates/visas.html:79
+msgid "payment_method"
+msgstr ""
+
+#: templates/visas.html:43 templates/visas.html:80
+msgid "payment_fees"
+msgstr ""
+
+#: templates/visas.html:81
+msgid "profit"
+msgstr ""
+

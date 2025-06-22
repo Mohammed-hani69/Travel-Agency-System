@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}{{ _('dashboard') }}{% endblock %}
+{% block title %}{% if get_locale() == 'ar' %}لوحة التحكم{% else %}Dashboard{% endif %}{% endblock %}
 {% block content %}
 <div class="container mt-4" dir="{{ 'rtl' if get_locale() == 'ar' else 'ltr' }}" style="text-align: {{ 'right' if get_locale() == 'ar' else 'left' }};">
     <!-- قائمة اختيار الشهر -->
     <form method="get" id="monthForm" class="mb-3">
         <div class="row align-items-center">
             <div class="col-auto">
-                <label for="monthSelect" class="form-label fw-bold">{{ _('month') }}:</label>
+                <label for="monthSelect" class="form-label fw-bold">{% if get_locale() == 'ar' %}الشهر{% else %}Month{% endif %}:</label>
             </div>
             <div class="col-auto">
                 <select id="monthSelect" name="month_year" class="form-select" onchange="document.getElementById('monthForm').submit()">
@@ -17,13 +17,15 @@
             </div>
         </div>
     </form>
-    <h2>{{ _('dashboard') }}</h2>
-    {% set net_profit = (ticket_profits + hotel_profits - total_expenses - total_salaries) %}
+    <h2>{% if get_locale() == 'ar' %}لوحة التحكم{% else %}Dashboard{% endif %}</h2>
+    {% set net_profit = (ticket_profits + hotel_profits + visa_profits - total_expenses - total_salaries) %}
+    {% set total_expenses_sum = expenses|map(attribute='amount_' ~ base_currency.code.lower())|sum %}
     <div class="row mb-3">
         <div class="col-md-12">
             <div style="background-color: {% if net_profit >= 0 %}#198754{% else %}#dc3545{% endif %}; color: #fff; border-radius: 8px; padding: 18px; font-size: 1.2rem; box-shadow: 0 2px 6px #0001;">
-                <strong>{{ _('net_profit') }}:</strong>
+                <strong>{% if get_locale() == 'ar' %}صافي الربح{% else %}Net Profit{% endif %}:</strong>
                 {{ format_currency(net_profit, base_currency.id) }}
+                
             </div>
         </div>
     </div>
@@ -31,40 +33,48 @@
         <div class="col-md-3">
             <div class="card text-center" style="background-color: #dc3545; color: #fff;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ _('total_expenses') }}</h5>
+                    <h5 class="card-title">{% if get_locale() == 'ar' %}إجمالي المصروفات{% else %}Total Expenses{% endif %}</h5>
                     <p class="card-text">
-                        -{{ format_currency(total_expenses, base_currency.id) }}
+                        -{{ format_currency(total_expenses_sum, base_currency.id) }}
                     </p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card text-center" style="background-color: #dc3545; color: #fff;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ _('total_salaries') }}</h5>
+                    <h5 class="card-title">{% if get_locale() == 'ar' %}إجمالي الرواتب{% else %}Total Salaries{% endif %}</h5>
                     <p class="card-text">
                         -{{ format_currency(total_salaries, base_currency.id) }}
                     </p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card text-center" style="background-color: #198754; color: #fff;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ _('ticket_profits') }}</h5>
+                    <h5 class="card-title">{% if get_locale() == 'ar' %}أرباح التذاكر{% else %}Ticket Profits{% endif %}</h5>
                     <p class="card-text">
-                        {{ format_currency(ticket_profits, base_currency.id) }}
+                        {{ format_currency(ticket_profits_positive, base_currency.id) }}
                     </p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card text-center" style="background-color: #198754; color: #fff;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ _('hotel_profits') if _('hotel_profits') != 'hotel_profits' else 'ربح الفنادق' }}</h5>
+                    <h5 class="card-title">{% if get_locale() == 'ar' %}أرباح الفنادق{% else %}Hotel Profits{% endif %}</h5>
                     <p class="card-text">
                         {{ format_currency(hotel_profits, base_currency.id) }}
                     </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3" >
+            <div class="card text-center" style="background-color: #20c997; color: #fff;">
+                <div class="card-body">
+                    <h5 class="card-title">{% if get_locale() == 'ar' %}أرباح التأشيرات{% else %}Visa Profits{% endif %}</h5>
+                    <p class="card-text">{{ format_currency(visa_profits, base_currency.id) }}</p>
                 </div>
             </div>
         </div>
@@ -73,24 +83,24 @@
         <div class="col-md-4">
             <div class="card text-center" style="background-color: #6f42c1; color: #fff;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ _('tickets_count') if _('tickets_count') != 'tickets_count' else 'عدد التذاكر' }}</h5>
+                    <h5 class="card-title">{% if get_locale() == 'ar' %}عدد الفنادق{% else %}Hotels Count{% endif %}</h5>
+                    <p class="card-text">{{ hotels_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center" style="background-color: #6f42c1; color: #fff;">
+                <div class="card-body">
+                    <h5 class="card-title">{% if get_locale() == 'ar' %}عدد التذاكر{% else %}Tickets Count{% endif %}</h5>
                     <p class="card-text">{{ tickets_count }}</p>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center" style="background-color: #20c997; color: #fff;">
+            <div class="card text-center" style="background-color: #6f42c1; color: #fff;">
                 <div class="card-body">
-                    <h5 class="card-title">{{ _('employees_count') if _('employees_count') != 'employees_count' else 'عدد الموظفين' }}</h5>
-                    <p class="card-text">{{ employees_count }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center" style="background-color: #fd7e14; color: #fff;">
-                <div class="card-body">
-                    <h5 class="card-title">{{ _('hotels_count') if _('hotels_count') != 'hotels_count' else 'عدد الفنادق' }}</h5>
-                    <p class="card-text">{{ hotels_count }}</p>
+                    <h5 class="card-title">{% if get_locale() == 'ar' %}عدد التأشيرات{% else %}Visas Count{% endif %}</h5>
+                    <p class="card-text">{{ visas_count }}</p>
                 </div>
             </div>
         </div>
@@ -98,10 +108,10 @@
     <!-- رسم بياني لصافي الربح حسب الفترة -->
     <div class="row mt-4">
         <div class="col-md-12 mb-2">
-            <label for="profitPeriod" class="form-label">{{ _('net_profit') }} {{ _('month') }}:</label>
+            <label for="profitPeriod" class="form-label">{% if get_locale() == 'ar' %}صافي الربح{% else %}Net Profit{% endif %} {% if get_locale() == 'ar' %}الشهر{% else %}Month{% endif %}:</label>
             <select id="profitPeriod" class="form-select w-auto d-inline-block">
-                <option value="month">{{ _('month') }}</option>
-                <option value="year">{{ _('year') if get_locale() == 'en' else 'السنة' }}</option>
+                <option value="month">{% if get_locale() == 'ar' %}الشهر{% else %}Month{% endif %}</option>
+                <option value="year">{% if get_locale() == 'ar' %}السنة{% else %}Year{% endif %}</option>
             </select>
         </div>
         <div class="col-md-12">
@@ -145,7 +155,7 @@
         data: {
             labels: months,
             datasets: [{
-                label: '{{ _('net_profit') }}',
+                label: '{% if get_locale() == 'ar' %}صافي الربح{% else %}Net Profit{% endif %}',
                 data: profitDataMonthly,
                 borderColor: function(context) {
                     const value = context.chart.data.datasets[0].data[context.dataIndex];
@@ -168,22 +178,22 @@
             responsive: true,
             plugins: {
                 legend: { position: 'top' },
-                title: { display: true, text: '{{ _('net_profit') }}' }
+                title: { display: true, text: '{% if get_locale() == 'ar' %}صافي الربح{% else %}Net Profit{% endif %}' }
             }
         }
     });
     document.getElementById('profitPeriod').addEventListener('change', function() {
         if (this.value === 'month') {
             profitChart.data.labels = months;
-            profitChart.data.datasets[0].label = '{{ _('net_profit') }}';
+            profitChart.data.datasets[0].label = '{% if get_locale() == 'ar' %}صافي الربح{% else %}Net Profit{% endif %}';
             profitChart.data.datasets[0].data = profitDataMonthly;
         } else if (this.value === 'year') {
             profitChart.data.labels = years;
-            profitChart.data.datasets[0].label = '{{ _('net_profit') }}';
+            profitChart.data.datasets[0].label = '{% if get_locale() == 'ar' %}صافي الربح{% else %}Net Profit{% endif %}';
             profitChart.data.datasets[0].data = profitDataYearly;
         } else if (this.value === 'day' && days.length > 0) {
             profitChart.data.labels = days;
-            profitChart.data.datasets[0].label = '{{ _('net_profit') }}';
+            profitChart.data.datasets[0].label = '{% if get_locale() == 'ar' %}صافي الربح{% else %}Net Profit{% endif %}';
             profitChart.data.datasets[0].data = profitDataDaily;
         }
         profitChart.update();
@@ -192,7 +202,7 @@
         var select = document.getElementById('profitPeriod');
         var option = document.createElement('option');
         option.value = 'day';
-        option.text = '{{ _('day') if get_locale() == 'en' else 'اليوم' }}';
+        option.text = '{% if get_locale() == 'ar' %}اليوم{% else %}Day{% endif %}';
         select.appendChild(option);
     }
     var ctx = document.getElementById('monthlyChart').getContext('2d');
@@ -202,24 +212,29 @@
             labels: months,
             datasets: [
                 {
-                    label: '{{ _('total_expenses') }}',
+                    label: '{% if get_locale() == 'ar' %}إجمالي المصروفات{% else %}Total Expenses{% endif %}',
                     data: {{ expenses_data|tojson }},
                     backgroundColor: 'rgba(255, 99, 132, 0.5)'
                 },
                 {
-                    label: '{{ _('total_salaries') }}',
+                    label: '{% if get_locale() == 'ar' %}إجمالي الرواتب{% else %}Total Salaries{% endif %}',
                     data: {{ salaries_data|tojson }},
                     backgroundColor: 'rgba(54, 162, 235, 0.5)'
                 },
                 {
-                    label: '{{ _('ticket_profits') }}',
+                    label: '{% if get_locale() == 'ar' %}أرباح التذاكر{% else %}Ticket Profits{% endif %}',
                     data: {{ ticket_profits_data|tojson }},
                     backgroundColor: 'rgba(255, 206, 86, 0.5)'
                 },
                 {
-                    label: '{{ _('hotel_profits') }}',
+                    label: '{% if get_locale() == 'ar' %}أرباح الفنادق{% else %}Hotel Profits{% endif %}',
                     data: {{ hotel_profits_data|tojson }},
                     backgroundColor: 'rgba(75, 192, 192, 0.5)'
+                },
+                {
+                    label: '{% if get_locale() == 'ar' %}أرباح التأشيرات{% else %}Visa Profits{% endif %}',
+                    data: {{ visa_profits_data|tojson }},
+                    backgroundColor: 'rgba(32, 201, 151, 0.5)'
                 }
             ]
         },
@@ -227,7 +242,7 @@
             responsive: true,
             plugins: {
                 legend: { position: 'top' },
-                title: { display: true, text: '{{ _('dashboard') }}' }
+                title: { display: true, text: '{% if get_locale() == 'ar' %}لوحة التحكم{% else %}Dashboard{% endif %}' }
             }
         }
     });

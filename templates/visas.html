@@ -1,52 +1,52 @@
 {% extends 'base.html' %}
-{% block title %}{{ _('visas') if _('visas') != 'visas' else 'التأشيرات' }}{% endblock %}
+{% block title %}{% if get_locale() == 'ar' %}التأشيرات{% else %}Visas{% endif %}{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ _('visas') if _('visas') != 'visas' else 'التأشيرات' }}</h2>
+    <h2>{% if get_locale() == 'ar' %}التأشيرات{% else %}Visas{% endif %}</h2>
     <form method="POST" action="/visas" class="p-3 bg-light rounded shadow-sm mb-4">
         <div class="row mb-3">
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('visa_type') if _('visa_type') != 'visa_type' else 'نوع التأشيرة' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}نوع التأشيرة{% else %}Visa Type{% endif %}</label>
                 <input type="text" name="visa_type" class="form-control" required>
             </div>
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('visa_duration') if _('visa_duration') != 'visa_duration' else 'مدة التأشيرة' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}مدة التأشيرة{% else %}Visa Duration{% endif %}</label>
                 <input type="text" name="visa_duration" class="form-control" required>
             </div>
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('visa_country') if _('visa_country') != 'visa_country' else 'بلد التأشيرة' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}بلد التأشيرة{% else %}Visa Country{% endif %}</label>
                 <input type="text" name="visa_country" class="form-control" required>
             </div>
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('visa_source') if _('visa_source') != 'visa_source' else 'مصدر التأشيرة' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}مصدر التأشيرة{% else %}Visa Source{% endif %}</label>
                 <input type="text" name="visa_source" class="form-control">
             </div>
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('owner_name') if _('owner_name') != 'owner_name' else 'اسم صاحب التأشيرة' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}اسم صاحب التأشيرة{% else %}Owner Name{% endif %}</label>
                 <input type="text" name="owner_name" class="form-control" required>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('purchase_price') if _('purchase_price') != 'purchase_price' else 'سعر الشراء' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}سعر الشراء{% else %}Purchase Price{% endif %}</label>
                 <input type="number" step="0.01" name="purchase_price" class="form-control" required>
             </div>
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('selling_price') if _('selling_price') != 'selling_price' else 'سعر البيع' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}سعر البيع{% else %}Selling Price{% endif %}</label>
                 <input type="number" step="0.01" name="selling_price" class="form-control" required>
             </div>
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('payment_method') if _('payment_method') != 'payment_method' else 'طريقة الدفع' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}طريقة الدفع{% else %}Payment Method{% endif %}</label>
                 <input type="text" name="payment_method" class="form-control">
             </div>
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('payment_fees') if _('payment_fees') != 'payment_fees' else 'رسوم طريقة الدفع' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}رسوم الدفع{% else %}Payment Fees{% endif %}</label>
                 <input type="number" step="0.01" name="payment_fees" class="form-control" value="0">
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-3 mb-2">
-                <label class="form-label">{{ _('currency') if _('currency') != 'currency' else 'العملة' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}العملة{% else %}Currency{% endif %}</label>
                 <select name="currency_id" class="form-select" required>
                     {% for currency in currencies %}
                         <option value="{{ currency.id }}">{{ currency.code }}</option>
@@ -54,13 +54,13 @@
                 </select>
             </div>
             <div class="col-md-9 mb-2">
-                <label class="form-label">{{ _('notes') if _('notes') != 'notes' else 'ملاحظات' }}</label>
+                <label class="form-label">{% if get_locale() == 'ar' %}ملاحظات{% else %}Notes{% endif %}</label>
                 <input type="text" name="notes" class="form-control">
             </div>
         </div>
         <div class="row">
             <div class="col-md-12 text-end">
-                <button type="submit" class="btn btn-primary px-4">{{ _('add_new') if _('add_new') != 'add_new' else 'إضافة' }}</button>
+                <button type="submit" class="btn btn-primary px-4">{% if get_locale() == 'ar' %}إضافة جديد{% else %}Add New{% endif %}</button>
             </div>
         </div>
     </form>
@@ -69,19 +69,19 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>{{ _('visa_type') if _('visa_type') != 'visa_type' else 'نوع التأشيرة' }}</th>
-                <th>{{ _('visa_duration') if _('visa_duration') != 'visa_duration' else 'مدة التأشيرة' }}</th>
-                <th>{{ _('visa_country') if _('visa_country') != 'visa_country' else 'بلد التأشيرة' }}</th>
-                <th>{{ _('visa_source') if _('visa_source') != 'visa_source' else 'مصدر التأشيرة' }}</th>
-                <th>{{ _('owner_name') if _('owner_name') != 'owner_name' else 'اسم صاحب التأشيرة' }}</th>
-                <th>{{ _('purchase_price') if _('purchase_price') != 'purchase_price' else 'سعر الشراء' }}</th>
-                <th>{{ _('selling_price') if _('selling_price') != 'selling_price' else 'سعر البيع' }}</th>
-                <th>{{ _('payment_method') if _('payment_method') != 'payment_method' else 'طريقة الدفع' }}</th>
-                <th>{{ _('payment_fees') if _('payment_fees') != 'payment_fees' else 'رسوم الدفع' }}</th>
-                <th>{{ _('profit') if _('profit') != 'profit' else 'الربح' }}</th>
-                <th>{{ _('currency') if _('currency') != 'currency' else 'العملة' }}</th>
-                <th>{{ _('notes') if _('notes') != 'notes' else 'ملاحظات' }}</th>
-                <th>{{ _('actions') }}</th>
+                <th>{% if get_locale() == 'ar' %}نوع التأشيرة{% else %}Visa Type{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}مدة التأشيرة{% else %}Visa Duration{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}بلد التأشيرة{% else %}Visa Country{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}مصدر التأشيرة{% else %}Visa Source{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}اسم صاحب التأشيرة{% else %}Owner Name{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}سعر الشراء{% else %}Purchase Price{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}سعر البيع{% else %}Selling Price{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}طريقة الدفع{% else %}Payment Method{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}رسوم الدفع{% else %}Payment Fees{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}الربح{% else %}Profit{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}العملة{% else %}Currency{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}ملاحظات{% else %}Notes{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
             </tr>
         </thead>
         <tbody>
@@ -104,7 +104,7 @@
                 <td>
                     <form method="POST" action="/visas/delete" style="display:inline;">
                         <input type="hidden" name="visa_id" value="{{ visa.id }}">
-                        <button type="submit" class="btn btn-danger btn-sm">{{ _('delete') }}</button>
+                        <button type="submit" class="btn btn-danger btn-sm">{% if get_locale() == 'ar' %}حذف{% else %}Delete{% endif %}</button>
                     </form>
                 </td>
             </tr>

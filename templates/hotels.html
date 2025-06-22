@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
-{% block title %}{{ _('hotels') }}{% endblock %}
+{% block title %}{% if get_locale() == 'ar' %}الفنادق{% else %}Hotels{% endif %}{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ _('hotels') }}</h2>
+    <h2>{% if get_locale() == 'ar' %}الفنادق{% else %}Hotels{% endif %}</h2>
     <!-- منطقة ملخص الأرباح والخسائر -->
     <div class="row mb-3">
         <div class="col-md-6">
             <div style="background-color: #198754; color: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 6px #0001;">
-                <strong>مجموع الأرباح:</strong>
+                <strong>{% if get_locale() == 'ar' %}مجموع الأرباح:{% else %}Total Profits:{% endif %}</strong>
                 {{ format_currency(hotels|map(attribute='profit')|select('gt', 0)|sum, base_currency.id) }}
             </div>
         </div>
         <div class="col-md-6">
             <div style="background-color: #dc3545; color: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 6px #0001;">
-                <strong>مجموع الخسائر:</strong>
+                <strong>{% if get_locale() == 'ar' %}مجموع الخسائر:{% else %}Total Losses:{% endif %}</strong>
                 {{ format_currency(hotels|map(attribute='profit')|select('lt', 0)|sum, base_currency.id) }}
             </div>
         </div>
@@ -21,47 +21,47 @@
     <form method="POST" action="/hotels" class="p-3 bg-light rounded shadow-sm mb-4">
         <div class="row mb-3">
             <div class="col-md-2 mb-2">
-                <label for="bookingNumber" class="form-label">رقم الحجز</label>
-                <input type="text" id="bookingNumber" name="booking_number" class="form-control" placeholder="رقم الحجز" required>
+                <label for="bookingNumber" class="form-label">{% if get_locale() == 'ar' %}رقم الحجز{% else %}Booking No.{% endif %}</label>
+                <input type="text" id="bookingNumber" name="booking_number" class="form-control" placeholder="{% if get_locale() == 'ar' %}رقم الحجز{% else %}Booking No.{% endif %}" required>
             </div>
             <div class="col-md-2 mb-2">
-                <label for="hotelName" class="form-label">اسم الفندق</label>
-                <input type="text" id="hotelName" name="hotel_name" class="form-control" placeholder="اسم الفندق" required>
+                <label for="hotelName" class="form-label">{% if get_locale() == 'ar' %}اسم الفندق{% else %}Hotel Name{% endif %}</label>
+                <input type="text" id="hotelName" name="hotel_name" class="form-control" placeholder="{% if get_locale() == 'ar' %}اسم الفندق{% else %}Hotel Name{% endif %}" required>
             </div>
             <div class="col-md-2 mb-2">
-                <label for="guestName" class="form-label">اسم النزيل</label>
-                <input type="text" id="guestName" name="guest_name" class="form-control" placeholder="اسم النزيل" required>
+                <label for="guestName" class="form-label">{% if get_locale() == 'ar' %}اسم النزيل{% else %}Guest Name{% endif %}</label>
+                <input type="text" id="guestName" name="guest_name" class="form-control" placeholder="{% if get_locale() == 'ar' %}اسم النزيل{% else %}Guest Name{% endif %}" required>
             </div>
             <div class="col-md-2 mb-2">
-                <label for="bookingSource" class="form-label">مصدر الحجز</label>
-                <input type="text" id="bookingSource" name="booking_source" class="form-control" placeholder="مصدر الحجز">
+                <label for="bookingSource" class="form-label">{% if get_locale() == 'ar' %}مصدر الحجز{% else %}Booking Source{% endif %}</label>
+                <input type="text" id="bookingSource" name="booking_source" class="form-control" placeholder="{% if get_locale() == 'ar' %}مصدر الحجز{% else %}Booking Source{% endif %}">
             </div>
             <div class="col-md-2 mb-2">
-                <label for="passengersCount" class="form-label">عدد الأفراد</label>
+                <label for="passengersCount" class="form-label">{% if get_locale() == 'ar' %}عدد الأفراد{% else %}Passengers{% endif %}</label>
                 <input type="number" id="passengersCount" name="passengers_count" class="form-control" min="1" value="1">
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-2 mb-2">
-                <label for="checkInDate" class="form-label">تاريخ الدخول</label>
+                <label for="checkInDate" class="form-label">{% if get_locale() == 'ar' %}تاريخ الدخول{% else %}Check-in{% endif %}</label>
                 <input type="date" id="checkInDate" name="check_in_date" class="form-control" required>
             </div>
             <div class="col-md-2 mb-2">
-                <label for="checkOutDate" class="form-label">تاريخ الخروج</label>
+                <label for="checkOutDate" class="form-label">{% if get_locale() == 'ar' %}تاريخ الخروج{% else %}Check-out{% endif %}</label>
                 <input type="date" id="checkOutDate" name="check_out_date" class="form-control" required>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-2 mb-2">
-                <label for="purchasePrice" class="form-label">سعر الشراء</label>
-                <input type="number" step="0.01" id="purchasePrice" name="purchase_price" class="form-control" placeholder="سعر الشراء" required>
+                <label for="purchasePrice" class="form-label">{% if get_locale() == 'ar' %}سعر الشراء{% else %}Purchase Price{% endif %}</label>
+                <input type="number" step="0.01" id="purchasePrice" name="purchase_price" class="form-control" placeholder="{% if get_locale() == 'ar' %}سعر الشراء{% else %}Purchase Price{% endif %}" required>
             </div>
             <div class="col-md-2 mb-2">
-                <label for="sellingPrice" class="form-label">سعر البيع</label>
-                <input type="number" step="0.01" id="sellingPrice" name="selling_price" class="form-control" placeholder="سعر البيع" required>
+                <label for="sellingPrice" class="form-label">{% if get_locale() == 'ar' %}سعر البيع{% else %}Selling Price{% endif %}</label>
+                <input type="number" step="0.01" id="sellingPrice" name="selling_price" class="form-control" placeholder="{% if get_locale() == 'ar' %}سعر البيع{% else %}Selling Price{% endif %}" required>
             </div>
             <div class="col-md-2 mb-2">
-                <label for="hotelCurrency" class="form-label">{{ _('currency') }}</label>
+                <label for="hotelCurrency" class="form-label">{% if get_locale() == 'ar' %}العملة{% else %}Currency{% endif %}</label>
                 <select id="hotelCurrency" name="currency_id" class="form-select" required>
                     {% for currency in currencies %}
                         <option value="{{ currency.id }}">{{ currency.code }}</option>
@@ -69,21 +69,21 @@
                 </select>
             </div>
             <div class="col-md-2 mb-2">
-                <label for="paymentFees" class="form-label">رسوم الدفع</label>
-                <input type="number" step="0.01" id="paymentFees" name="payment_fees" class="form-control" placeholder="رسوم الدفع" value="0">
+                <label for="paymentFees" class="form-label">{% if get_locale() == 'ar' %}رسوم الدفع{% else %}Payment Fees{% endif %}</label>
+                <input type="number" step="0.01" id="paymentFees" name="payment_fees" class="form-control" placeholder="{% if get_locale() == 'ar' %}رسوم الدفع{% else %}Payment Fees{% endif %}" value="0">
             </div>
             <div class="col-md-2 mb-2">
-                <label for="paymentMethod" class="form-label">طريقة الدفع</label>
-                <input type="text" id="paymentMethod" name="payment_method" class="form-control" placeholder="طريقة الدفع">
+                <label for="paymentMethod" class="form-label">{% if get_locale() == 'ar' %}طريقة الدفع{% else %}Payment Method{% endif %}</label>
+                <input type="text" id="paymentMethod" name="payment_method" class="form-control" placeholder="{% if get_locale() == 'ar' %}طريقة الدفع{% else %}Payment Method{% endif %}">
             </div>
             <div class="col-md-2 mb-2">
-                <label for="hotelNotes" class="form-label">ملاحظات</label>
-                <input type="text" id="hotelNotes" name="notes" class="form-control" placeholder="ملاحظات">
+                <label for="hotelNotes" class="form-label">{% if get_locale() == 'ar' %}ملاحظات{% else %}Notes{% endif %}</label>
+                <input type="text" id="hotelNotes" name="notes" class="form-control" placeholder="{% if get_locale() == 'ar' %}ملاحظات{% else %}Notes{% endif %}">
             </div>
         </div>
         <div class="row">
             <div class="col-md-12 text-end">
-                <button type="submit" class="btn btn-primary px-4">{{ _('add_new') }}</button>
+                <button type="submit" class="btn btn-primary px-4">{% if get_locale() == 'ar' %}إضافة جديد{% else %}Add New{% endif %}</button>
             </div>
         </div>
     </form>
@@ -92,21 +92,21 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>رقم الحجز</th>
-                <th>اسم الفندق</th>
-                <th>اسم النزيل</th>
-                <th>مصدر الحجز</th>
-                <th>عدد الأفراد</th>
-                <th>تاريخ الدخول</th>
-                <th>تاريخ الخروج</th>
-                <th>سعر الشراء</th>
-                <th>سعر البيع</th>
-                <th>رسوم الدفع</th>
-                <th>طريقة الدفع</th>
-                <th>ملاحظات</th>
-                <th>الربح</th>
-                <th>{{ _('currency') }}</th>
-                <th>{{ _('actions') }}</th>
+                <th>{% if get_locale() == 'ar' %}رقم الحجز{% else %}Booking No.{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}اسم الفندق{% else %}Hotel Name{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}اسم النزيل{% else %}Guest Name{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}مصدر الحجز{% else %}Booking Source{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}عدد الأفراد{% else %}Passengers{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}تاريخ الدخول{% else %}Check-in{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}تاريخ الخروج{% else %}Check-out{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}سعر الشراء{% else %}Purchase Price{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}سعر البيع{% else %}Selling Price{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}رسوم الدفع{% else %}Payment Fees{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}طريقة الدفع{% else %}Payment Method{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}ملاحظات{% else %}Notes{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}الربح{% else %}Profit{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}العملة{% else %}Currency{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
             </tr>
         </thead>
         <tbody>
@@ -137,9 +137,8 @@
                 </td>
                 <td>{{ base_currency.code }}</td>
                 <td>
-                    <form method="POST" action="/hotels/delete" style="display:inline;">
-                        <input type="hidden" name="hotel_id" value="{{ hotel.id }}">
-                        <button type="submit" class="btn btn-danger btn-sm">{{ _('delete') }}</button>
+                    <form method="POST" action="/hotels/delete/{{ hotel.id }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">{% if get_locale() == 'ar' %}حذف{% else %}Delete{% endif %}</button>
                     </form>
                 </td>
             </tr>

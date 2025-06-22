@@ -2,7 +2,7 @@
     "en": {
         "dashboard": "Dashboard",
         "expenses": "Expenses",
-        "salaries": "Salaries & Employees",
+        "salaries": "Salaries",
         "tickets": "Tickets",
         "hotels": "Hotels",
         "settings": "Settings",
@@ -12,6 +12,7 @@
         "total_salaries": "Total Salaries",
         "ticket_profits": "Ticket Profits",
         "hotel_profits": "Hotel Profits",
+        "visa_profits": "Visa Profits",
         "net_profit": "Net Profit",
         "add_new": "Add New",
         "edit": "Edit",
@@ -28,7 +29,8 @@
         "actions": "Actions",
         "visas": "Visas",
         "visa_type": "Visa Type",
-        "visa_price": "Visa Price",
+        "visa_duration": "Visa Duration",
+        "visa_country": "Visa Country",
         "visa_source": "Visa Source",
         "owner_name": "Owner Name",
         "purchase_price": "Purchase Price",
@@ -42,12 +44,17 @@
         "edit_visa": "Edit Visa",
         "visa_notes": "Visa Notes",
         "export_visas": "Export Visas",
-        "visa_management": "Visa Management"
+        "visa_management": "Visa Management",
+        "hotels_count": "Hotels Count",
+        "tickets_count": "Tickets Count",
+        "visas_count": "Visas Count",
+        "day": "Day",
+        "year": "Year"
     },
     "ar": {
         "dashboard": "لوحة التحكم",
         "expenses": "المصروفات",
-        "salaries": "الرواتب والموظفين",
+        "salaries": "الرواتب",
         "tickets": "التذاكر",
         "hotels": "الفنادق",
         "settings": "الإعدادات",
@@ -57,6 +64,7 @@
         "total_salaries": "إجمالي الرواتب",
         "ticket_profits": "أرباح التذاكر",
         "hotel_profits": "أرباح الفنادق",
+        "visa_profits": "أرباح التأشيرات",
         "net_profit": "صافي الربح",
         "add_new": "إضافة جديد",
         "edit": "تعديل",
@@ -73,7 +81,8 @@
         "actions": "الإجراءات",
         "visas": "التأشيرات",
         "visa_type": "نوع التأشيرة",
-        "visa_price": "سعر التأشيرة",
+        "visa_duration": "مدة التأشيرة",
+        "visa_country": "بلد التأشيرة",
         "visa_source": "مصدر التأشيرة",
         "owner_name": "اسم صاحب التأشيرة",
         "purchase_price": "سعر الشراء",
@@ -87,6 +96,11 @@
         "edit_visa": "تعديل التأشيرة",
         "visa_notes": "ملاحظات التأشيرة",
         "export_visas": "تصدير التأشيرات",
-        "visa_management": "إدارة التأشيرات"
+        "visa_management": "إدارة التأشيرات",
+        "hotels_count": "عدد الفنادق",
+        "tickets_count": "عدد التذاكر",
+        "visas_count": "عدد التأشيرات",
+        "day": "اليوم",
+        "year": "السنة"
     }
 }

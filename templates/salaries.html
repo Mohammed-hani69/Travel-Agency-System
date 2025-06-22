@@ -1,26 +1,26 @@
 {% extends 'base.html' %}
-{% block title %}{{ _('salaries') }}{% endblock %}
+{% block title %}{% if get_locale() == 'ar' %}الرواتب{% else %}Salaries{% endif %}{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ _('salaries') }}</h2>
+    <h2>{% if get_locale() == 'ar' %}الرواتب{% else %}Salaries{% endif %}</h2>
     <form method="POST" action="/salaries" class="p-3 bg-light rounded shadow-sm mb-4">
         <div class="row mb-3">
             <div class="col-md-4 mb-2">
-                <label for="employeeName" class="form-label">{{ _('name') }}</label>
-                <input type="text" id="employeeName" name="name" class="form-control" placeholder="{{ _('name') }}" required>
+                <label for="employeeName" class="form-label">{% if get_locale() == 'ar' %}الاسم{% else %}Name{% endif %}</label>
+                <input type="text" id="employeeName" name="name" class="form-control" placeholder="{% if get_locale() == 'ar' %}الاسم{% else %}Name{% endif %}" required>
             </div>
             <div class="col-md-4 mb-2">
-                <label for="employeeJobTitle" class="form-label">{{ _('job_title') }}</label>
-                <input type="text" id="employeeJobTitle" name="job_title" class="form-control" placeholder="{{ _('job_title') }}" required>
+                <label for="employeeJobTitle" class="form-label">{% if get_locale() == 'ar' %}المسمى الوظيفي{% else %}Job Title{% endif %}</label>
+                <input type="text" id="employeeJobTitle" name="job_title" class="form-control" placeholder="{% if get_locale() == 'ar' %}المسمى الوظيفي{% else %}Job Title{% endif %}" required>
             </div>
             <div class="col-md-4 mb-2">
-                <label for="employeeSalary" class="form-label">{{ _('amount') }}</label>
-                <input type="number" step="0.01" id="employeeSalary" name="salary_amount" class="form-control" placeholder="{{ _('amount') }}" required>
+                <label for="employeeSalary" class="form-label">{% if get_locale() == 'ar' %}المبلغ{% else %}Amount{% endif %}</label>
+                <input type="number" step="0.01" id="employeeSalary" name="salary_amount" class="form-control" placeholder="{% if get_locale() == 'ar' %}المبلغ{% else %}Amount{% endif %}" required>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-4 mb-2">
-                <label for="employeeCurrency" class="form-label">{{ _('currency') }}</label>
+                <label for="employeeCurrency" class="form-label">{% if get_locale() == 'ar' %}العملة{% else %}Currency{% endif %}</label>
                 <select id="employeeCurrency" name="currency_id" class="form-select" required>
                     {% for currency in currencies %}
                         <option value="{{ currency.id }}">{{ currency.code }}</option>
@@ -28,13 +28,13 @@
                 </select>
             </div>
             <div class="col-md-4 mb-2">
-                <label for="employeePaymentDate" class="form-label">{{ _('date') }}</label>
+                <label for="employeePaymentDate" class="form-label">{% if get_locale() == 'ar' %}التاريخ{% else %}Date{% endif %}</label>
                 <input type="date" id="employeePaymentDate" name="payment_date" class="form-control" required>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12 text-end">
-                <button type="submit" class="btn btn-primary px-4">{{ _('add_new') }}</button>
+                <button type="submit" class="btn btn-primary px-4">{% if get_locale() == 'ar' %}إضافة جديد{% else %}Add New{% endif %}</button>
             </div>
         </div>
     </form>
@@ -43,12 +43,12 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>{{ _('name') }}</th>
-                <th>{{ _('job_title') }}</th>
-                <th>{{ _('amount') }}</th>
-                <th>{{ _('currency') }}</th>
-                <th>{{ _('date') }}</th>
-                <th>{{ _('actions') }}</th>
+                <th>{% if get_locale() == 'ar' %}الاسم{% else %}Name{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}المسمى الوظيفي{% else %}Job Title{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}المبلغ{% else %}Amount{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}العملة{% else %}Currency{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                <th>{% if get_locale() == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
             </tr>
         </thead>
         <tbody>
@@ -68,13 +68,11 @@
                 <td>
                     <form method="POST" action="/salaries/delete" style="display:inline;">
                         <input type="hidden" name="employee_id" value="{{ employee.id }}">
-                        <button type="submit" class="btn btn-danger btn-sm">{{ _('delete') }}</button>
+                        <button type="submit" class="btn btn-danger btn-sm">{% if get_locale() == 'ar' %}حذف{% else %}Delete{% endif %}</button>
                     </form>
                     <form method="POST" action="/salaries/pay-again" style="display:inline; margin-right: 5px;">
                         <input type="hidden" name="employee_id" value="{{ employee.id }}">
-                        <button type="submit" class="btn btn-success btn-sm">
-                            تقبـيض جديد
-                        </button>
+                        <button type="submit" class="btn btn-success btn-sm">{% if get_locale() == 'ar' %}تقبـيض جديد{% else %}Pay Again{% endif %}</button>
                     </form>
                 </td>
             </tr>

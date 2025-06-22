@@ -441,51 +441,51 @@
             {% set perms = current_user.permissions if current_user.role != 'admin' else ['dashboard','expenses','salaries','tickets','hotels','currencies','export','users','visas'] %}
             {% if 'dashboard' in perms %}
             <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
-                <i class="fa-solid fa-chart-line"></i> {{ _('dashboard') }}
+                <i class="fa-solid fa-chart-line"></i> {% if get_locale() == 'ar' %}لوحة التحكم{% else %}Dashboard{% endif %}
             </a>
             {% endif %}
             {% if 'expenses' in perms %}
             <a class="nav-link {% if '/expenses' in request.path %}active{% endif %}" href="/expenses">
-                <i class="fa-solid fa-money-bill-wave"></i> {{ _('expenses') }}
+                <i class="fa-solid fa-money-bill-wave"></i> {% if get_locale() == 'ar' %}المصروفات{% else %}Expenses{% endif %}
             </a>
             {% endif %}
             {% if 'salaries' in perms %}
             <a class="nav-link {% if '/salaries' in request.path %}active{% endif %}" href="/salaries">
-                <i class="fa-solid fa-users"></i> {{ _('salaries') }}
+                <i class="fa-solid fa-users"></i> {% if get_locale() == 'ar' %}الرواتب{% else %}Salaries{% endif %}
             </a>
             {% endif %}
             {% if 'tickets' in perms %}
             <a class="nav-link {% if '/tickets' in request.path %}active{% endif %}" href="/tickets">
-                <i class="fa-solid fa-ticket"></i> {{ _('tickets') }}
+                <i class="fa-solid fa-ticket"></i> {% if get_locale() == 'ar' %}التذاكر{% else %}Tickets{% endif %}
             </a>
             {% endif %}
             {% if 'hotels' in perms %}
             <a class="nav-link {% if '/hotels' in request.path %}active{% endif %}" href="/hotels">
-                <i class="fa-solid fa-hotel"></i> {{ _('hotels') }}
+                <i class="fa-solid fa-hotel"></i> {% if get_locale() == 'ar' %}الفنادق{% else %}Hotels{% endif %}
             </a>
             {% endif %}
             {% if 'visas' in perms %}
             <a class="nav-link {% if '/visas' in request.path %}active{% endif %}" href="/visas">
-                <i class="fa-solid fa-passport"></i> {{ _('visas') if _('visas') != 'visas' else 'التأشيرات' }}
+                <i class="fa-solid fa-passport"></i> {% if get_locale() == 'ar' %}التأشيرات{% else %}Visas{% endif %}
             </a>
             {% endif %}
             {% if 'currencies' in perms %}
             <a class="nav-link {% if '/currencies' in request.path %}active{% endif %}" href="/currencies">
-                <i class="fa-solid fa-coins"></i> {{ _('currency_settings') }}
+                <i class="fa-solid fa-coins"></i> {% if get_locale() == 'ar' %}إعدادات العملات{% else %}Currency Settings{% endif %}
             </a>
             {% endif %}
             {% if 'export' in perms %}
             <a class="nav-link {% if '/export' in request.path %}active{% endif %}" href="/export">
-                <i class="fa-solid fa-file-export"></i> {{ _('export') }}
+                <i class="fa-solid fa-file-export"></i> {% if get_locale() == 'ar' %}تصدير التقارير{% else %}Export Reports{% endif %}
             </a>
             {% endif %}
             {% if 'users' in perms %}
             <a class="nav-link {% if '/users' in request.path %}active{% endif %}" href="/users">
-                <i class="fa-solid fa-users-gear"></i> {{ _('users_management') }}
+                <i class="fa-solid fa-users-gear"></i> {% if get_locale() == 'ar' %}إدارة المستخدمين{% else %}Users Management{% endif %}
             </a>
             {% endif %}
             <a class="nav-link" href="/logout" style="margin-top:40px;color:#e53935;">
-                <i class="fa-solid fa-right-from-bracket"></i> {{ _('logout') if _('logout') != 'logout' else 'تسجيل الخروج' }}
+                <i class="fa-solid fa-right-from-bracket"></i> {% if get_locale() == 'ar' %}تسجيل الخروج{% else %}Logout{% endif %}
             </a>
         </nav>
         <div class="lang-switch">

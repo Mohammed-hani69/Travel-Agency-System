@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}لا تملك صلاحية الوصول{% endblock %}
+{% block title %}{% if get_locale() == 'ar' %}لا تملك صلاحية الوصول{% else %}No Permission{% endif %}{% endblock %}
 {% block content %}
 <div class="container mt-5 text-center">
     <div class="alert alert-danger shadow-lg p-4">
         <h2 class="mb-3"><i class="fa-solid fa-ban fa-2x text-danger"></i></h2>
-        <h4>عذراً، ليس لديك صلاحية الوصول لهذه الصفحة.</h4>
-        <p>يرجى مراجعة مدير النظام إذا كنت بحاجة لصلاحية إضافية.</p>
-        <a href="/" class="btn btn-primary mt-3">العودة للوحة التحكم</a>
+        <h4>{% if get_locale() == 'ar' %}عذراً، ليس لديك صلاحية الوصول لهذه الصفحة.{% else %}Sorry, you do not have permission to access this page.{% endif %}</h4>
+        <p>{% if get_locale() == 'ar' %}يرجى مراجعة مدير النظام إذا كنت بحاجة لصلاحية إضافية.{% else %}Please contact the system administrator if you need additional permissions.{% endif %}</p>
+        <a href="/" class="btn btn-primary mt-3">{% if get_locale() == 'ar' %}العودة للوحة التحكم{% else %}Back to Dashboard{% endif %}</a>
     </div>
 </div>
 {% endblock %}
